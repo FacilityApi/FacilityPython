@@ -8,7 +8,7 @@ internal static class Build
 {
 	public static int Main(string[] args) => BuildRunner.Execute(args, build =>
 	{
-		var codegen = "fsdgen___";
+		var codegen = "fsdgenpython";
 
 		var dotNetBuildSettings = new DotNetBuildSettings
 		{
@@ -20,6 +20,7 @@ internal static class Build
 				SourceCodeUrl = "https://github.com/FacilityApi/FacilityPython/tree/master/src",
 				ProjectHasDocs = name => !name.StartsWith("fsdgen", StringComparison.Ordinal),
 			},
+			Verbosity = DotNetBuildVerbosity.Minimal,
 		};
 
 		build.AddDotNetTargets(dotNetBuildSettings);
@@ -44,7 +45,11 @@ internal static class Build
 
 			var verifyOption = verify ? "--verify" : null;
 
-			RunDotNet(toolPath, "___", "___", "--newline", "lf", verifyOption);
+			RunDotNet("tool", "restore");
+			RunDotNet("tool", "run", "FacilityConformance", "fsd", "--output", "conformance/ConformanceApi.fsd", verifyOption);
+
+			RunDotNet(toolPath, "conformance/ConformanceApi.fsd", "conformance/http/", "--newline", "lf", verifyOption);
+			RunDotNet(toolPath, "conformance/ConformanceApi.fsd", "conformance/no-http/", "--no-http", "--newline", "lf", verifyOption);
 		}
 	});
 }

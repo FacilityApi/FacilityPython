@@ -1,0 +1,206 @@
+{{ func WriteSummary ~}}
+{{ if !$0.Summary.empty? ~}}
+
+{{ $0.Summary }}
+{{ end ~}}
+{{ end # func WriteSummary ~}}
+
+{{ func WriteRemarks ~}}
+{{ if $0.Remarks && !$0.Remarks.empty? ~}}
+
+{{ for line in $0.Remarks ~}}
+{{ line | regex.replace `\[([^\]]+)\]\(\)` `[$1]($1.md)` }}
+{{ end ~}}
+{{ end ~}}
+{{ end # func WriteRemarks ~}}
+
+{{ func WriteCodeGenComment ~}}
+
+<!-- {{ CodeGenCommentText }} -->
+{{ end # func WriteCodeGenComment ~}}
+
+{{### Service ### ~}}
+==> {{ Service.Name }}.md
+
+# {{ Service.Name }}
+{{ WriteSummary Service ~}}
+{{ if HttpService && HttpService.Url ~}}
+
+URL: [`{{ HttpService.Url }}`]({{ HttpService.Url }})
+{{ end # if HttpService && HttpService.Url ~}}
+{{ if !Service.Methods.empty? ~}}
+{{ if HttpService ~}}
+
+| method | path | description |
+| --- | --- | --- |
+{{ for method in HttpService.Methods | WhereNotObsolete ~}}
+| [{{ method.ServiceMethod.Name }}]({{ Service.Name }}/{{ method.ServiceMethod.Name }}.md) | `{{ method.Method }} {{ method.Path }}` | {{ method.ServiceMethod.Summary }} |
+{{ end ~}}
+{{ else # if HttpService ~}}
+
+| method | description |
+| --- | --- |
+{{ for method in Service.Methods | WhereNotObsolete ~}}
+| [{{ method.Name }}]({{ Service.Name }}/{{ method.Name }}.md) | {{ method.Summary }} |
+{{ end ~}}
+{{ end # else ~}}
+{{ end # if !Service.Methods.empty? ~}}
+{{ if !Service.Dtos.empty? ~}}
+
+| data | description |
+| --- | --- |
+{{ for dto in Service.Dtos | WhereNotObsolete ~}}
+| [{{ dto.Name }}]({{ Service.Name }}/{{ dto.Name }}.md) | {{ dto.Summary }} |
+{{ end ~}}
+{{ end # if !Service.Dtos.empty? ~}}
+{{ if !Service.Enums.empty? ~}}
+
+| enum | description |
+| --- | --- |
+{{ for enum in Service.Enums | WhereNotObsolete ~}}
+| [{{ enum.Name }}]({{ Service.Name }}/{{ enum.Name }}.md) | {{ enum.Summary }} |
+{{ end ~}}
+{{ end # if !Service.Enums.empty? ~}}
+{{ if !Service.ErrorSets.empty? ~}}
+
+| errors | description |
+| --- | --- |
+{{ for errorSet in Service.ErrorSets | WhereNotObsolete ~}}
+| [{{ errorSet.Name }}]({{ Service.Name }}/{{ errorSet.Name }}.md) | {{ errorSet.Summary }} |
+{{ end ~}}
+{{ end # if !Service.ErrorSets.empty? ~}}
+{{ WriteRemarks Service ~}}
+{{ WriteCodeGenComment ~}}
+
+{{### Methods ### ~}}
+{{ for method in Service.Methods | WhereNotObsolete ~}}
+
+==> {{ Service.Name }}/{{ method.Name }}.md
+
+# {{ method.Name }}
+{{ WriteSummary method ~}}
+{{ http = method | GetHttp ~}}
+{{ if http ~}}
+
+```
+{{ http.Method }} {{ http.Path }}
+{{ for field in http.QueryFields | WhereNotObsolete ~}}
+  {{ if for.first; '?'; else; '&'; end }}{{ field.Name }}={{ '{' + field.ServiceField.Name + '}' }}
+{{ end ~}}
+{{ for field in http.RequestHeaderFields | WhereNotObsolete ~}}
+{{ field.Name }}: ({{ field.ServiceField.Name }})
+{{ end ~}}
+{{ if http.RequestBodyField ~}}
+({{ http.RequestBodyField.ServiceField.Name }})
+{{ else if !http.RequestNormalFields.empty? ~}}
+{
+{{ for field in http.RequestNormalFields | WhereNotObsolete ~}}
+  "{{ field.ServiceField.Name }}": {{ field.ServiceField | GetFieldType | RenderFieldTypeAsJsonValue }}{{ if !for.last; ','; end }}
+{{ end ~}}
+}
+{{ end # if else if ~}}
+{{ if !http.ResponseHeaderFields.empty? ~}}
+--- response
+{{ for field in http.ResponseHeaderFields | WhereNotObsolete ~}}
+{{ field.Name }}: ({{ field.ServiceField.Name }})
+{{ end ~}}
+{{ end # if !http.ResponseHeaderFields.empty? ~}}
+{{ for response in http.ValidResponses ~}}
+--- {{ response.StatusCode + 0 }} {{ response.StatusCode | StatusCodePhrase }}
+{{ if response.BodyField ~}}
+({{ if (response.BodyField.ServiceField | GetFieldType).Kind == 'Boolean'; 'if '; end }}{{ response.BodyField.ServiceField.Name }})
+{{ else if !response.NormalFields.empty? ~}}
+{
+{{ for field in response.NormalFields | WhereNotObsolete ~}}
+  "{{ field.ServiceField.Name }}": {{ field.ServiceField | GetFieldType | RenderFieldTypeAsJsonValue }}{{ if !for.last; ','; end }}
+{{ end ~}}
+}
+{{ end # if else if ~}}
+{{ end # for response in http.ValidResponses ~}}
+```
+{{ end # if http ~}}
+{{ requestFields = method.RequestFields | WhereNotObsolete ~}}
+{{ if !requestFields.empty? ~}}
+
+| request | type | description |
+| --- | --- | --- |
+{{ for field in requestFields ~}}
+| {{ field.Name }} | {{ field | GetFieldType | RenderFieldType }} | {{ field.Summary }} |
+{{ end ~}}
+{{ end # if !requestFields.empty? ~}}
+{{ responseFields = method.ResponseFields | WhereNotObsolete ~}}
+{{ if !responseFields.empty? ~}}
+
+| response | type | description |
+| --- | --- | --- |
+{{ for field in responseFields ~}}
+| {{ field.Name }} | {{ field | GetFieldType | RenderFieldType }} | {{ field.Summary }} |
+{{ end ~}}
+{{ end # if !requestFields.empty? ~}}
+{{ WriteRemarks method ~}}
+{{ WriteCodeGenComment ~}}
+{{ end # for method in Service.Methods | WhereNotObsolete ~}}
+
+{{### DTOs ### ~}}
+{{ for dto in Service.Dtos | WhereNotObsolete ~}}
+
+==> {{ Service.Name }}/{{ dto.Name }}.md
+
+# {{ dto.Name }}
+{{ WriteSummary dto ~}}
+{{ fields = dto.Fields | WhereNotObsolete ~}}
+{{ if HttpService ~}}
+
+```
+{
+{{ for field in fields ~}}
+  "{{ field.Name }}": {{ field | GetFieldType | RenderFieldTypeAsJsonValue }}{{ if !for.last; ','; end }}
+{{ end ~}}
+}
+```
+{{ end # if HttpService ~}}
+{{ if !fields.empty? ~}}
+
+| field | type | description |
+| --- | --- | --- |
+{{ for field in fields ~}}
+| {{ field.Name }} | {{ field | GetFieldType | RenderFieldType }} | {{ field.Summary }} |
+{{ end ~}}
+{{ end # if !fields.empty? ~}}
+{{ WriteRemarks dto ~}}
+{{ WriteCodeGenComment ~}}
+{{ end # for dto in Service.Dtos | WhereNotObsolete ~}}
+
+{{### Enums ### ~}}
+{{ for enum in Service.Enums | WhereNotObsolete ~}}
+
+==> {{ Service.Name }}/{{ enum.Name }}.md
+
+# {{ enum.Name }}
+{{ WriteSummary enum ~}}
+
+| name | description |
+| --- | --- |
+{{ for value in enum.Values | WhereNotObsolete ~}}
+| {{ value.Name }} | {{ value.Summary }} |
+{{ end ~}}
+{{ WriteRemarks enum ~}}
+{{ WriteCodeGenComment ~}}
+{{ end # for enum in Service.Enums | WhereNotObsolete ~}}
+
+{{### Error Sets ### ~}}
+{{ for errorSet in Service.ErrorSets | WhereNotObsolete ~}}
+
+==> {{ Service.Name }}/{{ errorSet.Name }}.md
+
+# {{ errorSet.Name }}
+{{ WriteSummary errorSet ~}}
+
+| error | description |
+| --- | --- |
+{{ for error in errorSet.Errors | WhereNotObsolete ~}}
+| {{ error.Name }} | {{ error.Summary }} |
+{{ end ~}}
+{{ WriteRemarks errorSet ~}}
+{{ WriteCodeGenComment ~}}
+{{ end # for errorSet in Service.ErrorSets | WhereNotObsolete ~}}

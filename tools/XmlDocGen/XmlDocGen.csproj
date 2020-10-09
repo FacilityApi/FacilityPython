@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Facility.CodeGen.Python\Facility.CodeGen.Python.csproj" />
   </ItemGroup>
 
   <ItemGroup>

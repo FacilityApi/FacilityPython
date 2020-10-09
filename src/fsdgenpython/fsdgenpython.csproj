@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <Description>A tool that generates Python for a Facility Service Definition.</Description>
+    <PackageTags>Facility FSD Python CodeGen</PackageTags>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Facility.CodeGen.Console" Version="2.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Facility.CodeGen.Python\Facility.CodeGen.Python.csproj" />
+  </ItemGroup>
+
+</Project>
