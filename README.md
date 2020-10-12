@@ -1,7 +1,8 @@
 # Facility Python Support
 
 [Python support](https://facilityapi.github.io/generate/python) for the [Facility API Framework](https://facilityapi.github.io/).
-[![AppVeyor](https://img.shields.io/appveyor/ci/ejball/facilitypython.svg)](https://ci.appveyor.com/project/ejball/facilitypython)
+
+[![Build](https://github.com/FacilityApi/FacilityPython/workflows/Build/badge.svg)](https://github.com/FacilityApi/FacilityPython/actions?query=workflow%3ABuild)
 
 Name | Description | NuGet
 --- | --- | ---
