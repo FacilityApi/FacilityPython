@@ -24,9 +24,6 @@ namespace Facility.CodeGen.Python.UnitTests
 				GeneratorName = "PythonGeneratorTests",
 			};
 			generator.GenerateOutput(service);
-
-			generator.NoHttp = true;
-			generator.GenerateOutput(service);
 		}
 	}
 }

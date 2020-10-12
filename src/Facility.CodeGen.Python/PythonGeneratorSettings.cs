@@ -7,9 +7,5 @@ namespace Facility.CodeGen.Python
 	/// </summary>
 	public sealed class PythonGeneratorSettings : FileGeneratorSettings
 	{
-		/// <summary>
-		/// True if the HTTP documentation should be omitted.
-		/// </summary>
-		public bool NoHttp { get; set; }
 	}
 }

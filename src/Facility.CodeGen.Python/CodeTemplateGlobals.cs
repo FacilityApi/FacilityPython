@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using Facility.Definition;
 using Facility.Definition.CodeGen;
 using Facility.Definition.Http;
@@ -28,6 +29,46 @@ namespace Facility.CodeGen.Python
 			HttpService?.Methods.FirstOrDefault(x => x.ServiceMethod == methodInfo);
 
 		public ServiceTypeInfo? GetFieldType(ServiceFieldInfo field) => Service.GetFieldType(field);
+
+		public static string RenderFieldTypeClass(ServiceTypeInfo typeInfo) =>
+			typeInfo.Kind switch
+			{
+				ServiceTypeKind.String => "str",
+				ServiceTypeKind.Boolean => "bool",
+				ServiceTypeKind.Double => "float",
+				ServiceTypeKind.Int32 => "int",
+				ServiceTypeKind.Int64 => "int",
+				ServiceTypeKind.Decimal => "Decimal",
+				ServiceTypeKind.Bytes => "bytes",
+				ServiceTypeKind.Object => "object",
+				ServiceTypeKind.Error => "facility.Error",
+				ServiceTypeKind.Dto => typeInfo.Dto!.Name,
+				ServiceTypeKind.Enum => typeInfo.Enum!.Name,
+				ServiceTypeKind.Result => $"facility.Result",
+				ServiceTypeKind.Array => $"list",
+				ServiceTypeKind.Map => $"dict",
+				_ => throw new ArgumentException("Type kind out of range.", nameof(typeInfo)),
+			};
+
+		public static string RenderFieldTypeDeclaration(ServiceTypeInfo typeInfo) =>
+			typeInfo.Kind switch
+			{
+				ServiceTypeKind.String => "str",
+				ServiceTypeKind.Boolean => "bool",
+				ServiceTypeKind.Double => "float",
+				ServiceTypeKind.Int32 => "int",
+				ServiceTypeKind.Int64 => "int",
+				ServiceTypeKind.Decimal => "Decimal",
+				ServiceTypeKind.Bytes => "bytes",
+				ServiceTypeKind.Object => "object",
+				ServiceTypeKind.Error => "facility.Error",
+				ServiceTypeKind.Dto => typeInfo.Dto!.Name,
+				ServiceTypeKind.Enum => typeInfo.Enum!.Name,
+				ServiceTypeKind.Result => "facility.Result",  // TODO: parameterize
+				ServiceTypeKind.Array => $"List[{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
+				ServiceTypeKind.Map => $"Dict[str,{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
+				_ => throw new ArgumentException("Type kind out of range.", nameof(typeInfo)),
+			};
 
 		public static string RenderFieldType(ServiceTypeInfo typeInfo) =>
 			typeInfo.Kind switch
@@ -101,6 +142,13 @@ namespace Facility.CodeGen.Python
 			return reasonPhrase;
 		}
 
+		public static string SnakeCase(string text)
+		{
+			text = Regex.Replace(text, @"(\p{Ll})(\p{Lu})", @"$1_$2").ToLowerInvariant() +
+				(s_pythonReserved.Contains(text) ? "_" : "");
+			return text;
+		}
+
 		private static string RenderDtoAsJsonValue(ServiceDtoInfo dtoInfo)
 		{
 			var visibleFields = dtoInfo.Fields.Where(x => !x.IsObsolete).ToList();
@@ -158,6 +206,51 @@ namespace Facility.CodeGen.Python
 			{ 503, "Service Unavailable" },
 			{ 504, "Gateway Timeout" },
 			{ 505, "Http Version Not Supported" },
+		};
+
+		private static readonly string[] s_pythonReserved = new string[]
+		{
+			"and",
+			"as",
+			"assert",
+			"bool",
+			"break",
+			"class",
+			"continue",
+			"def",
+			"del",
+			"dict",
+			"elif",
+			"else",
+			"except",
+			"exec",
+			"finally",
+			"float",
+			"for",
+			"from",
+			"global",
+			"id",
+			"if",
+			"import",
+			"in",
+			"int",
+			"is",
+			"lambda",
+			"list",
+			"not",
+			"or",
+			"pass",
+			"print",
+			"raise",
+			"return",
+			"self",
+			"set",
+			"str",
+			"try",
+			"tuple",
+			"while",
+			"with",
+			"yield",
 		};
 	}
 }

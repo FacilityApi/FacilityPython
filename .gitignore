@@ -1,7 +1,9 @@
 .vs/
+.vscode/
 bin/
 obj/
 release/
+.idea/
 
 *.cache
 *.log

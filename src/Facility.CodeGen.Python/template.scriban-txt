@@ -1,3 +1,10 @@
+{{ func WriteDtoFromDataAssignment ~}}
+{{ if ($0 | GetFieldType).Kind == 12 && ($0 | GetFieldType).ValueType && ($0 | GetFieldType).ValueType.Dto }}{{ $0.Name }}=list(map({{ ($0 | GetFieldType).ValueType.Dto.Name }}.from_data, data["{{$0.Name}}"])) if "{{$0.Name}}" in data else None,
+{{ else if ($0 | GetFieldType).Dto }}{{ $0.Name | SnakeCase }}={{ ($0 | GetFieldType).Dto.Name }}.from_data(data["{{$0.Name}}"]) if "{{$0.Name}}" in data else None,
+{{ else }}{{ $0.Name | SnakeCase }}=data.get("{{ $0.Name | SnakeCase }}"),
+{{ end ~}}
+{{ end # func WriteDtoFromDataAssignment ~}}
+
 {{ func WriteSummary ~}}
 {{ if !$0.Summary.empty? ~}}
 
@@ -19,6 +26,71 @@
 <!-- {{ CodeGenCommentText }} -->
 {{ end # func WriteCodeGenComment ~}}
 
+{{### Client ### ~}}
+==> {{ Service.Name }}.py
+"""
+{{ CodeGenCommentText }}
+
+{{ Service.Name }}
+{{ if HttpService && HttpService.Url ~}}
+
+URL: [`{{ HttpService.Url }}`]({{ HttpService.Url }})
+{{ end # if HttpService && HttpService.Url ~}}
+
+{{ Service.Summary }}
+{{ if Service.Remarks && !Service.Remarks.empty? ~}}
+
+{{ for line in Service.Remarks ~}}
+{{ line | regex.replace `\[([^\]]+)\]\(\)` `$1` }}
+{{ end ~}}
+{{ end ~}}
+"""
+
+import facility
+from decimal import Decimal
+from urllib.parse import quote
+from typing import Dict, List
+
+{{ for dto in Service.Dtos | WhereNotObsolete ~}}
+
+{{ fields = dto.Fields | WhereNotObsolete ~}}
+class {{ dto.Name }}(facility.DTO):
+{{ if dto.Summary && !dto.Summary.empty? ~}}
+    """
+    {{ dto.Summary }}
+    """
+{{ end ~}}
+    def __init__(
+        self,
+{{ for field in fields ~}}
+{{ if (field | GetFieldType).Dto == dto ~}}{{ fquote = '"' ~}}{{ else }}{{ fquote = '' ~}}{{ end ~}}
+        {{ field.Name | SnakeCase }}: {{ fquote }}{{ field | GetFieldType | RenderFieldTypeDeclaration }}{{ fquote }},
+{{ end ~}}
+    ):
+        """
+{{ for field in fields ~}}
+        :param {{ field.Name | SnakeCase }}: {{ field.Summary }}
+{{ end ~}}
+        """
+        super().__init__()
+{{ for field in fields ~}}
+        if not isinstance({{ field.Name | SnakeCase }}, ({{ field | GetFieldType | RenderFieldTypeClass }}, type(None))):
+            raise ValueError(f"Invalid {{ field.Name | SnakeCase }}: {{ "{" }}{{ field.Name | SnakeCase }}{{ "}" }}")
+        self.{{ field.Name | SnakeCase }} = {{ field.Name | SnakeCase }}
+{{ end ~}}
+
+    @staticmethod
+    def from_data(data: dict) -> "{{ dto.Name }}":
+        return {{ dto.Name }}(
+{{ for field in fields ~}}
+            {{ WriteDtoFromDataAssignment field ~}}
+{{ end ~}}
+        )
+
+{{ end # for dto in Service.Dtos ~}}
+
+
+# {{ CodeGenCommentText }}
 {{### Service ### ~}}
 ==> {{ Service.Name }}.md
 

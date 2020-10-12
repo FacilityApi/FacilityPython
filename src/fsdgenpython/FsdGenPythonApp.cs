@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ArgsReading;
 using Facility.CodeGen.Console;
@@ -18,15 +19,11 @@ namespace fsdgenpython
 			"Generates Markdown for a Facility Service Definition.",
 		};
 
-		protected override IReadOnlyList<string> ExtraUsage => new[]
-		{
-			"   --no-http",
-			"      Omit HTTP documentation.",
-		};
+		protected override IReadOnlyList<string> ExtraUsage => Array.Empty<string>();
 
 		protected override CodeGenerator CreateGenerator() => new PythonGenerator();
 
 		protected override FileGeneratorSettings CreateSettings(ArgsReader args) =>
-			new PythonGeneratorSettings { NoHttp = args.ReadFlag("no-http") };
+			new PythonGeneratorSettings { };
 	}
 }

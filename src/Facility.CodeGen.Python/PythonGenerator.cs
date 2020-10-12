@@ -79,6 +79,7 @@ namespace Facility.CodeGen.Python
 			var patternsToClean = new[]
 			{
 				new CodeGenPattern("*.md", codeGenComment),
+				new CodeGenPattern("*.py", codeGenComment),
 			};
 			return new CodeGenOutput(outputFiles, patternsToClean);
 		}
@@ -88,7 +89,6 @@ namespace Facility.CodeGen.Python
 		/// </summary>
 		public override void ApplySettings(FileGeneratorSettings settings)
 		{
-			NoHttp = ((PythonGeneratorSettings) settings).NoHttp;
 		}
 
 		/// <summary>
