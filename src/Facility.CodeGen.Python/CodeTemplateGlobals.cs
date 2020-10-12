@@ -66,7 +66,7 @@ namespace Facility.CodeGen.Python
 				ServiceTypeKind.Enum => typeInfo.Enum!.Name,
 				ServiceTypeKind.Result => "facility.Result",  // TODO: parameterize
 				ServiceTypeKind.Array => $"List[{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
-				ServiceTypeKind.Map => $"Dict[str,{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
+				ServiceTypeKind.Map => $"Dict[str, {RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
 				_ => throw new ArgumentException("Type kind out of range.", nameof(typeInfo)),
 			};
 
@@ -136,6 +136,16 @@ namespace Facility.CodeGen.Python
 			}
 		}
 
+		public IEnumerable Enumerate(IEnumerable items)
+		{
+			int index = 0;
+			foreach (var item in items)
+			{
+				yield return Tuple.Create(index, item);
+				index += 1;
+			}
+		}
+
 		public static string StatusCodePhrase(HttpStatusCode statusCode)
 		{
 			s_reasonPhrases.TryGetValue((int) statusCode, out var reasonPhrase);
@@ -147,6 +157,11 @@ namespace Facility.CodeGen.Python
 			text = Regex.Replace(text, @"(\p{Ll})(\p{Lu})", @"$1_$2").ToLowerInvariant() +
 				(s_pythonReserved.Contains(text) ? "_" : "");
 			return text;
+		}
+
+		public static string ToUpper(string text)
+		{
+			return text.ToUpperInvariant();
 		}
 
 		private static string RenderDtoAsJsonValue(ServiceDtoInfo dtoInfo)
@@ -215,6 +230,7 @@ namespace Facility.CodeGen.Python
 			"assert",
 			"bool",
 			"break",
+			"bytes",
 			"class",
 			"continue",
 			"def",
@@ -222,6 +238,7 @@ namespace Facility.CodeGen.Python
 			"dict",
 			"elif",
 			"else",
+			"enum",
 			"except",
 			"exec",
 			"finally",
@@ -237,7 +254,9 @@ namespace Facility.CodeGen.Python
 			"is",
 			"lambda",
 			"list",
+			"map",
 			"not",
+			"object",
 			"or",
 			"pass",
 			"print",

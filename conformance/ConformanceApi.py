@@ -44,14 +44,28 @@ The tester should report a test failure if:
 """
 
 import facility
+from enum import Enum
 from decimal import Decimal
 from urllib.parse import quote
 from typing import Dict, List
 
 
+class Answer(Enum):
+    """
+    One of three answers.
+
+    Use `maybe` if you aren't sure.
+    """
+    YES = 1  # Affirmative.
+    NO = 2  # Negative.
+    MAYBE = 3  # Unknown.
+
+
 class Widget(facility.DTO):
     """
     A widget.
+
+    Widgets are useful for conformance tests.
     """
     def __init__(
         self,
@@ -87,14 +101,14 @@ class Any(facility.DTO):
         int32: int,
         int64: int,
         decimal: Decimal,
-        bytes: bytes,
-        object: object,
+        bytes_: bytes,
+        object_: object,
         error: facility.Error,
         data: "Any",
-        enum: Answer,
-        array: AnyArray,
-        map: AnyMap,
-        result: AnyResult,
+        enum_: Answer,
+        array: "AnyArray",
+        map_: "AnyMap",
+        result: "AnyResult",
     ):
         """
         :param string:
@@ -103,13 +117,13 @@ class Any(facility.DTO):
         :param int32:
         :param int64:
         :param decimal:
-        :param bytes:
-        :param object:
+        :param bytes_:
+        :param object_:
         :param error:
         :param data:
-        :param enum:
+        :param enum_:
         :param array:
-        :param map:
+        :param map_:
         :param result:
         """
         super().__init__()
@@ -131,27 +145,27 @@ class Any(facility.DTO):
         if not isinstance(decimal, (Decimal, type(None))):
             raise ValueError(f"Invalid decimal: {decimal}")
         self.decimal = decimal
-        if not isinstance(bytes, (bytes, type(None))):
-            raise ValueError(f"Invalid bytes: {bytes}")
-        self.bytes = bytes
-        if not isinstance(object, (object, type(None))):
-            raise ValueError(f"Invalid object: {object}")
-        self.object = object
+        if not isinstance(bytes_, (bytes, type(None))):
+            raise ValueError(f"Invalid bytes_: {bytes_}")
+        self.bytes_ = bytes_
+        if not isinstance(object_, (object, type(None))):
+            raise ValueError(f"Invalid object_: {object_}")
+        self.object_ = object_
         if not isinstance(error, (facility.Error, type(None))):
             raise ValueError(f"Invalid error: {error}")
         self.error = error
         if not isinstance(data, (Any, type(None))):
             raise ValueError(f"Invalid data: {data}")
         self.data = data
-        if not isinstance(enum, (Answer, type(None))):
-            raise ValueError(f"Invalid enum: {enum}")
-        self.enum = enum
+        if not isinstance(enum_, (Answer, type(None))):
+            raise ValueError(f"Invalid enum_: {enum_}")
+        self.enum_ = enum_
         if not isinstance(array, (AnyArray, type(None))):
             raise ValueError(f"Invalid array: {array}")
         self.array = array
-        if not isinstance(map, (AnyMap, type(None))):
-            raise ValueError(f"Invalid map: {map}")
-        self.map = map
+        if not isinstance(map_, (AnyMap, type(None))):
+            raise ValueError(f"Invalid map_: {map_}")
+        self.map_ = map_
         if not isinstance(result, (AnyResult, type(None))):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
@@ -165,13 +179,13 @@ class Any(facility.DTO):
             int32=data.get("int32"),
             int64=data.get("int64"),
             decimal=data.get("decimal"),
-            bytes=data.get("bytes"),
-            object=data.get("object"),
+            bytes_=data.get("bytes_"),
+            object_=data.get("object_"),
             error=data.get("error"),
             data=Any.from_data(data["data"]) if "data" in data else None,
-            enum=data.get("enum"),
+            enum_=data.get("enum_"),
             array=AnyArray.from_data(data["array"]) if "array" in data else None,
-            map=AnyMap.from_data(data["map"]) if "map" in data else None,
+            map_=AnyMap.from_data(data["map"]) if "map" in data else None,
             result=AnyResult.from_data(data["result"]) if "result" in data else None,
         )
 
@@ -185,13 +199,13 @@ class AnyArray(facility.DTO):
         int32: List[int],
         int64: List[int],
         decimal: List[Decimal],
-        bytes: List[bytes],
-        object: List[object],
+        bytes_: List[bytes],
+        object_: List[object],
         error: List[facility.Error],
         data: List[Any],
-        enum: List[Answer],
+        enum_: List[Answer],
         array: List[List[int]],
-        map: List[Dict[str,int]],
+        map_: List[Dict[str, int]],
         result: List[facility.Result],
     ):
         """
@@ -201,13 +215,13 @@ class AnyArray(facility.DTO):
         :param int32:
         :param int64:
         :param decimal:
-        :param bytes:
-        :param object:
+        :param bytes_:
+        :param object_:
         :param error:
         :param data:
-        :param enum:
+        :param enum_:
         :param array:
-        :param map:
+        :param map_:
         :param result:
         """
         super().__init__()
@@ -229,27 +243,27 @@ class AnyArray(facility.DTO):
         if not isinstance(decimal, (list, type(None))):
             raise ValueError(f"Invalid decimal: {decimal}")
         self.decimal = decimal
-        if not isinstance(bytes, (list, type(None))):
-            raise ValueError(f"Invalid bytes: {bytes}")
-        self.bytes = bytes
-        if not isinstance(object, (list, type(None))):
-            raise ValueError(f"Invalid object: {object}")
-        self.object = object
+        if not isinstance(bytes_, (list, type(None))):
+            raise ValueError(f"Invalid bytes_: {bytes_}")
+        self.bytes_ = bytes_
+        if not isinstance(object_, (list, type(None))):
+            raise ValueError(f"Invalid object_: {object_}")
+        self.object_ = object_
         if not isinstance(error, (list, type(None))):
             raise ValueError(f"Invalid error: {error}")
         self.error = error
         if not isinstance(data, (list, type(None))):
             raise ValueError(f"Invalid data: {data}")
         self.data = data
-        if not isinstance(enum, (list, type(None))):
-            raise ValueError(f"Invalid enum: {enum}")
-        self.enum = enum
+        if not isinstance(enum_, (list, type(None))):
+            raise ValueError(f"Invalid enum_: {enum_}")
+        self.enum_ = enum_
         if not isinstance(array, (list, type(None))):
             raise ValueError(f"Invalid array: {array}")
         self.array = array
-        if not isinstance(map, (list, type(None))):
-            raise ValueError(f"Invalid map: {map}")
-        self.map = map
+        if not isinstance(map_, (list, type(None))):
+            raise ValueError(f"Invalid map_: {map_}")
+        self.map_ = map_
         if not isinstance(result, (list, type(None))):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
@@ -263,13 +277,13 @@ class AnyArray(facility.DTO):
             int32=data.get("int32"),
             int64=data.get("int64"),
             decimal=data.get("decimal"),
-            bytes=data.get("bytes"),
-            object=data.get("object"),
+            bytes_=data.get("bytes_"),
+            object_=data.get("object_"),
             error=data.get("error"),
             data=list(map(Any.from_data, data["data"])) if "data" in data else None,
-            enum=data.get("enum"),
+            enum_=data.get("enum_"),
             array=data.get("array"),
-            map=data.get("map"),
+            map_=data.get("map_"),
             result=data.get("result"),
         )
 
@@ -277,20 +291,20 @@ class AnyArray(facility.DTO):
 class AnyMap(facility.DTO):
     def __init__(
         self,
-        string: Dict[str,str],
-        boolean: Dict[str,bool],
-        double: Dict[str,float],
-        int32: Dict[str,int],
-        int64: Dict[str,int],
-        decimal: Dict[str,Decimal],
-        bytes: Dict[str,bytes],
-        object: Dict[str,object],
-        error: Dict[str,facility.Error],
-        data: Dict[str,Any],
-        enum: Dict[str,Answer],
-        array: Dict[str,List[int]],
-        map: Dict[str,Dict[str,int]],
-        result: Dict[str,facility.Result],
+        string: Dict[str, str],
+        boolean: Dict[str, bool],
+        double: Dict[str, float],
+        int32: Dict[str, int],
+        int64: Dict[str, int],
+        decimal: Dict[str, Decimal],
+        bytes_: Dict[str, bytes],
+        object_: Dict[str, object],
+        error: Dict[str, facility.Error],
+        data: Dict[str, Any],
+        enum_: Dict[str, Answer],
+        array: Dict[str, List[int]],
+        map_: Dict[str, Dict[str, int]],
+        result: Dict[str, facility.Result],
     ):
         """
         :param string:
@@ -299,13 +313,13 @@ class AnyMap(facility.DTO):
         :param int32:
         :param int64:
         :param decimal:
-        :param bytes:
-        :param object:
+        :param bytes_:
+        :param object_:
         :param error:
         :param data:
-        :param enum:
+        :param enum_:
         :param array:
-        :param map:
+        :param map_:
         :param result:
         """
         super().__init__()
@@ -327,27 +341,27 @@ class AnyMap(facility.DTO):
         if not isinstance(decimal, (dict, type(None))):
             raise ValueError(f"Invalid decimal: {decimal}")
         self.decimal = decimal
-        if not isinstance(bytes, (dict, type(None))):
-            raise ValueError(f"Invalid bytes: {bytes}")
-        self.bytes = bytes
-        if not isinstance(object, (dict, type(None))):
-            raise ValueError(f"Invalid object: {object}")
-        self.object = object
+        if not isinstance(bytes_, (dict, type(None))):
+            raise ValueError(f"Invalid bytes_: {bytes_}")
+        self.bytes_ = bytes_
+        if not isinstance(object_, (dict, type(None))):
+            raise ValueError(f"Invalid object_: {object_}")
+        self.object_ = object_
         if not isinstance(error, (dict, type(None))):
             raise ValueError(f"Invalid error: {error}")
         self.error = error
         if not isinstance(data, (dict, type(None))):
             raise ValueError(f"Invalid data: {data}")
         self.data = data
-        if not isinstance(enum, (dict, type(None))):
-            raise ValueError(f"Invalid enum: {enum}")
-        self.enum = enum
+        if not isinstance(enum_, (dict, type(None))):
+            raise ValueError(f"Invalid enum_: {enum_}")
+        self.enum_ = enum_
         if not isinstance(array, (dict, type(None))):
             raise ValueError(f"Invalid array: {array}")
         self.array = array
-        if not isinstance(map, (dict, type(None))):
-            raise ValueError(f"Invalid map: {map}")
-        self.map = map
+        if not isinstance(map_, (dict, type(None))):
+            raise ValueError(f"Invalid map_: {map_}")
+        self.map_ = map_
         if not isinstance(result, (dict, type(None))):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
@@ -361,13 +375,13 @@ class AnyMap(facility.DTO):
             int32=data.get("int32"),
             int64=data.get("int64"),
             decimal=data.get("decimal"),
-            bytes=data.get("bytes"),
-            object=data.get("object"),
+            bytes_=data.get("bytes_"),
+            object_=data.get("object_"),
             error=data.get("error"),
             data=data.get("data"),
-            enum=data.get("enum"),
+            enum_=data.get("enum_"),
             array=data.get("array"),
-            map=data.get("map"),
+            map_=data.get("map_"),
             result=data.get("result"),
         )
 
@@ -381,13 +395,13 @@ class AnyResult(facility.DTO):
         int32: facility.Result,
         int64: facility.Result,
         decimal: facility.Result,
-        bytes: facility.Result,
-        object: facility.Result,
+        bytes_: facility.Result,
+        object_: facility.Result,
         error: facility.Result,
         data: facility.Result,
-        enum: facility.Result,
+        enum_: facility.Result,
         array: facility.Result,
-        map: facility.Result,
+        map_: facility.Result,
         result: facility.Result,
     ):
         """
@@ -397,13 +411,13 @@ class AnyResult(facility.DTO):
         :param int32:
         :param int64:
         :param decimal:
-        :param bytes:
-        :param object:
+        :param bytes_:
+        :param object_:
         :param error:
         :param data:
-        :param enum:
+        :param enum_:
         :param array:
-        :param map:
+        :param map_:
         :param result:
         """
         super().__init__()
@@ -425,27 +439,27 @@ class AnyResult(facility.DTO):
         if not isinstance(decimal, (facility.Result, type(None))):
             raise ValueError(f"Invalid decimal: {decimal}")
         self.decimal = decimal
-        if not isinstance(bytes, (facility.Result, type(None))):
-            raise ValueError(f"Invalid bytes: {bytes}")
-        self.bytes = bytes
-        if not isinstance(object, (facility.Result, type(None))):
-            raise ValueError(f"Invalid object: {object}")
-        self.object = object
+        if not isinstance(bytes_, (facility.Result, type(None))):
+            raise ValueError(f"Invalid bytes_: {bytes_}")
+        self.bytes_ = bytes_
+        if not isinstance(object_, (facility.Result, type(None))):
+            raise ValueError(f"Invalid object_: {object_}")
+        self.object_ = object_
         if not isinstance(error, (facility.Result, type(None))):
             raise ValueError(f"Invalid error: {error}")
         self.error = error
         if not isinstance(data, (facility.Result, type(None))):
             raise ValueError(f"Invalid data: {data}")
         self.data = data
-        if not isinstance(enum, (facility.Result, type(None))):
-            raise ValueError(f"Invalid enum: {enum}")
-        self.enum = enum
+        if not isinstance(enum_, (facility.Result, type(None))):
+            raise ValueError(f"Invalid enum_: {enum_}")
+        self.enum_ = enum_
         if not isinstance(array, (facility.Result, type(None))):
             raise ValueError(f"Invalid array: {array}")
         self.array = array
-        if not isinstance(map, (facility.Result, type(None))):
-            raise ValueError(f"Invalid map: {map}")
-        self.map = map
+        if not isinstance(map_, (facility.Result, type(None))):
+            raise ValueError(f"Invalid map_: {map_}")
+        self.map_ = map_
         if not isinstance(result, (facility.Result, type(None))):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
@@ -459,13 +473,13 @@ class AnyResult(facility.DTO):
             int32=data.get("int32"),
             int64=data.get("int64"),
             decimal=data.get("decimal"),
-            bytes=data.get("bytes"),
-            object=data.get("object"),
+            bytes_=data.get("bytes_"),
+            object_=data.get("object_"),
             error=data.get("error"),
             data=data.get("data"),
-            enum=data.get("enum"),
+            enum_=data.get("enum_"),
             array=data.get("array"),
-            map=data.get("map"),
+            map_=data.get("map_"),
             result=data.get("result"),
         )
 
@@ -473,7 +487,7 @@ class AnyResult(facility.DTO):
 class HasWidget(facility.DTO):
     def __init__(
         self,
-        widget: Widget,
+        widget: "Widget",
     ):
         """
         :param widget:

@@ -21,6 +21,24 @@
 {{ end ~}}
 {{ end # func WriteRemarks ~}}
 
+{{ func WriteSummaryAndRemarks ~}}
+{{ if !$0.Summary.empty? || ($0.Remarks && !$0.Remarks.empty?) ~}}
+    """
+{{ if !$0.Summary.empty? ~}}
+    {{ $0.Summary }}
+{{ end ~}}
+{{ if !$0.Summary.empty? && ($0.Remarks && !$0.Remarks.empty?) ~}}
+
+{{ end ~}}
+{{ if $0.Remarks && !$0.Remarks.empty? ~}}
+{{ for line in $0.Remarks ~}}
+    {{ line | regex.replace `\[([^\]]+)\]\(\)` `$1` }}
+{{ end ~}}
+{{ end ~}}
+    """
+{{ end ~}}
+{{ end # func WriteSummaryAndRemarks ~}}
+
 {{ func WriteCodeGenComment ~}}
 
 <!-- {{ CodeGenCommentText }} -->
@@ -47,23 +65,29 @@ URL: [`{{ HttpService.Url }}`]({{ HttpService.Url }})
 """
 
 import facility
+from enum import Enum
 from decimal import Decimal
 from urllib.parse import quote
 from typing import Dict, List
 
+{{ for enum in Service.Enums | WhereNotObsolete ~}}
+
+class {{ enum.Name }}(Enum):
+{{ WriteSummaryAndRemarks enum ~}}
+{{ for pair in enum.Values | WhereNotObsolete | Enumerate ~}}
+    {{ pair.Item2.Name | SnakeCase | ToUpper }} = {{ pair.Item1 + 1 }}  # {{ pair.Item2.Summary }}
+{{ end ~}}
+
+{{ end # for enum in Service.Enums ~}}
 {{ for dto in Service.Dtos | WhereNotObsolete ~}}
 
 {{ fields = dto.Fields | WhereNotObsolete ~}}
 class {{ dto.Name }}(facility.DTO):
-{{ if dto.Summary && !dto.Summary.empty? ~}}
-    """
-    {{ dto.Summary }}
-    """
-{{ end ~}}
+{{ WriteSummaryAndRemarks dto ~}}
     def __init__(
         self,
 {{ for field in fields ~}}
-{{ if (field | GetFieldType).Dto == dto ~}}{{ fquote = '"' ~}}{{ else }}{{ fquote = '' ~}}{{ end ~}}
+{{ if (field | GetFieldType).Dto ~}}{{ fquote = '"' ~}}{{ else }}{{ fquote = '' ~}}{{ end ~}}
         {{ field.Name | SnakeCase }}: {{ fquote }}{{ field | GetFieldType | RenderFieldTypeDeclaration }}{{ fquote }},
 {{ end ~}}
     ):
