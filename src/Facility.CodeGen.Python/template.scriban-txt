@@ -23,19 +23,19 @@
 
 {{ func WriteSummaryAndRemarks ~}}
 {{ if !$0.Summary.empty? || ($0.Remarks && !$0.Remarks.empty?) ~}}
-    """
+{{ $1 }}"""
 {{ if !$0.Summary.empty? ~}}
-    {{ $0.Summary }}
+{{ $1 }}{{ $0.Summary }}
 {{ end ~}}
 {{ if !$0.Summary.empty? && ($0.Remarks && !$0.Remarks.empty?) ~}}
 
 {{ end ~}}
 {{ if $0.Remarks && !$0.Remarks.empty? ~}}
 {{ for line in $0.Remarks ~}}
-    {{ line | regex.replace `\[([^\]]+)\]\(\)` `$1` }}
+{{ $1 }}{{ line | regex.replace `\[([^\]]+)\]\(\)` `$1` }}
 {{ end ~}}
 {{ end ~}}
-    """
+{{ $1 }}"""
 {{ end ~}}
 {{ end # func WriteSummaryAndRemarks ~}}
 
@@ -43,6 +43,84 @@
 
 <!-- {{ CodeGenCommentText }} -->
 {{ end # func WriteCodeGenComment ~}}
+
+{{ func WriteNestedFieldTypeToData ~}}
+{{ if $0.Dto ~}}
+v{{ $1 }}.to_data(){{ else if $0.Kind == 12 && $0.ValueType # Array ~}}
+[{{ WriteNestedFieldTypeToData $0.ValueType $1 + 1 ~}}
+ for v{{ $1 + 1 }} in v{{ $1 }}]{{ else if $0.Kind == 13 && $0.ValueType # Map ~}}
+{k{{ $1 + 1 }}: {{ WriteNestedFieldTypeToData $0.ValueType $1 + 1 ~}}
+ for k{{ $1 + 1 }}, v{{ $1 + 1 }} in v{{ $1 }}.items()}{{ else ~}}
+v{{ $1 }}{{ end ~}}
+{{ end # func WriteNestedFieldTypeToData ~}}
+
+{{ func WriteFieldToData ~}}
+{{ type = $0 | GetFieldType ~}}
+{{ if type.Dto ~}}
+{{ $0.Name | SnakeCase }}.to_data(){{ else if type.Kind == 12 && type.ValueType # Array ~}}
+[{{ WriteNestedFieldTypeToData type.ValueType 1 }} for v1 in {{ $0.Name | SnakeCase }}]{{ else if type.Kind == 13 && type.ValueType # Map ~}}
+{k1: {{ WriteNestedFieldTypeToData type.ValueType 1 }} for k1, v1 in {{ $0.Name | SnakeCase }}.items()}{{ else ~}}
+{{ $0.Name | SnakeCase }}{{ end ~}}
+{{ end # func WriteFieldToData ~}}
+
+{{ func WriteDtoDefinition # dto name fields ~}}
+
+{{ name = $1 }}
+{{ fields = $2 | WhereNotObsolete ~}}
+class {{ name }}(facility.DTO):
+{{ WriteSummaryAndRemarks $0 "    " ~}}
+    def __init__(
+        self,
+{{ for field in fields ~}}
+{{ if (field | GetFieldType).Dto ~}}{{ fquote = '"' ~}}{{ else }}{{ fquote = '' ~}}{{ end ~}}
+        {{ field.Name | SnakeCase }}: {{ fquote }}{{ field | GetFieldType | RenderFieldTypeDeclaration }}{{ fquote }},
+{{ end ~}}
+    ):
+        """
+{{ for field in fields ~}}
+        :param {{ field.Name | SnakeCase }}: {{ field.Summary }}
+{{ end ~}}
+        """
+        super().__init__()
+{{ for field in fields ~}}
+        if not isinstance({{ field.Name | SnakeCase }}, ({{ field | GetFieldType | RenderFieldTypeClass }}, type(None))):
+            raise ValueError(f"Invalid {{ field.Name | SnakeCase }}: {{ "{" }}{{ field.Name | SnakeCase }}{{ "}" }}")
+        self.{{ field.Name | SnakeCase }} = {{ field.Name | SnakeCase }}
+{{ end ~}}
+
+    @staticmethod
+    def from_data(data: dict) -> "{{ name }}":
+        return {{ name }}(
+{{ for field in fields ~}}
+            {{ WriteDtoFromDataAssignment field ~}}
+{{ end ~}}
+        )
+
+{{ end # func WriteDtoDefinition ~}}
+
+{{ func WriteFieldsDict # fields dictname empty ~}}
+{{ if $0 && !$0.empty? ~}}
+{{ noreq = true ~}}{{ for field in $0 ~}}{{ if field.IsRequired ~}}{{ noreq = false ~}}{{ end ~}}{{ end ~}}
+{{ if noreq ~}}
+        {{ $1 }} = dict()
+{{ else ~}}
+        {{ $1 }} = {
+{{ for field in $0 ~}}
+{{ if field.IsRequired ~}}
+            "{{ field.ServiceField.Name }}": {{ WriteFieldToData field.ServiceField }},
+{{ end ~}}
+{{ end # field in $0 ~}}
+        }
+{{ end # if noreq else ~}}
+{{ for field in $0 ~}}{{ if !field.IsRequired ~}}
+        if {{ field.ServiceField.Name | SnakeCase }} is not None:
+            {{ $1 }}["{{ field.ServiceField.Name }}"] = {{ WriteFieldToData field.ServiceField }}
+{{ end # if !field.IsRequired ~}}
+{{ end # field in $0 ~}}
+{{ else # if $0 ~}}
+        {{ $1 }} = {{ $2 }}
+{{ end # if $0 else ~}}
+{{ end # WriteFieldsDict ~}}
 
 {{### Client ### ~}}
 ==> {{ Service.Name }}.py
@@ -70,48 +148,85 @@ from decimal import Decimal
 from urllib.parse import quote
 from typing import Dict, List
 
+{{### Enums ### ~}}
 {{ for enum in Service.Enums | WhereNotObsolete ~}}
 
 class {{ enum.Name }}(Enum):
-{{ WriteSummaryAndRemarks enum ~}}
+{{ WriteSummaryAndRemarks enum "    " ~}}
 {{ for pair in enum.Values | WhereNotObsolete | Enumerate ~}}
     {{ pair.Item2.Name | SnakeCase | ToUpper }} = {{ pair.Item1 + 1 }}  # {{ pair.Item2.Summary }}
 {{ end ~}}
 
 {{ end # for enum in Service.Enums ~}}
+{{### DTOs ### ~}}
 {{ for dto in Service.Dtos | WhereNotObsolete ~}}
+{{ WriteDtoDefinition dto (dto.Name | PascalCase) dto.Fields ~}}
+{{ end # for dto in Service.Dtos ~}}
+{{ for method in Service.Methods | WhereNotObsolete ~}}
+{{ WriteDtoDefinition method (method.Name | PascalCase + "Response") method.ResponseFields ~}}
+{{ end # for dto in Service.Dtos ~}}
 
-{{ fields = dto.Fields | WhereNotObsolete ~}}
-class {{ dto.Name }}(facility.DTO):
-{{ WriteSummaryAndRemarks dto ~}}
-    def __init__(
-        self,
-{{ for field in fields ~}}
-{{ if (field | GetFieldType).Dto ~}}{{ fquote = '"' ~}}{{ else }}{{ fquote = '' ~}}{{ end ~}}
-        {{ field.Name | SnakeCase }}: {{ fquote }}{{ field | GetFieldType | RenderFieldTypeDeclaration }}{{ fquote }},
+{{### Client and Methods ### ~}}
+class Client(facility.ClientBase):
+    def __init__(self, base_uri={{ if HttpService ~}}"{{ HttpService.Url }}"{{ else ~}}None{{ end ~}}, headers=None, oauth=None):
+        super(Client, self).__init__(base_uri=base_uri, headers=headers, oauth=oauth)
+
+{{ for method in Service.Methods | WhereNotObsolete ~}}
+{{ http = method | GetHttp ~}}
+{{ if method.RequestFields.empty? ~}}
+    def {{ method.Name | SnakeCase }}(self) -> facility.Result[{{ method.Name | PascalCase }}Response]:
+{{ else }}
+    def {{ method.Name | SnakeCase }}(
+        self, *,
+{{ for field in method.RequestFields ~}}
+{{ if field.IsRequired ~}}
+        {{ field.Name | SnakeCase }}: {{ field | GetFieldType | RenderFieldTypeDeclaration }},
 {{ end ~}}
-    ):
+{{ end ~}}
+{{ for field in method.RequestFields ~}}
+{{ if !field.IsRequired ~}}
+        {{ field.Name | SnakeCase }}: {{ field | GetFieldType | RenderFieldTypeDeclaration }} = None,
+{{ end ~}}
+{{ end ~}}
+    ) -> facility.Result[{{ method.Name | PascalCase }}Response]:
+{{ end # if method.RequestFields.empty? ~}}
         """
-{{ for field in fields ~}}
+{{ if method.Summary && !method.Summary.empty? ~}}
+        {{ method.Summary }}
+{{ end ~}}
+{{ if method.Remarks && !method.Remarks.empty? ~}}
+
+{{ for line in method.Remarks ~}}
+        {{ line | regex.replace `\[([^\]]+)\]\(\)` `$1` }}
+{{ end ~}}
+{{ end # if method.Remarks ~}}
+{{ if method.RequestFields && !method.RequestFields.empty? ~}}
+
+{{ for field in method.RequestFields ~}}
         :param {{ field.Name | SnakeCase }}: {{ field.Summary }}
 {{ end ~}}
+{{ end ~}}
         """
-        super().__init__()
-{{ for field in fields ~}}
-        if not isinstance({{ field.Name | SnakeCase }}, ({{ field | GetFieldType | RenderFieldTypeClass }}, type(None))):
-            raise ValueError(f"Invalid {{ field.Name | SnakeCase }}: {{ "{" }}{{ field.Name | SnakeCase }}{{ "}" }}")
-        self.{{ field.Name | SnakeCase }} = {{ field.Name | SnakeCase }}
-{{ end ~}}
+{{ if http ~}}
+        uri_ = {{ RenderPathAsPythonFString http ~}}
 
-    @staticmethod
-    def from_data(data: dict) -> "{{ dto.Name }}":
-        return {{ dto.Name }}(
-{{ for field in fields ~}}
-            {{ WriteDtoFromDataAssignment field ~}}
-{{ end ~}}
-        )
-
-{{ end # for dto in Service.Dtos ~}}
+{{ WriteFieldsDict http.QueryFields "query_" "dict()" ~}}
+{{ if http.RequestBodyField ~}}
+        request_ = {{ http.RequestBodyField.ServiceField.Name | SnakeCase }}
+{{ else ~}}
+{{ WriteFieldsDict http.RequestNormalFields "request_" "None" ~}}
+{{ end # if http.RequestBodyField else ~}}
+{{ WriteFieldsDict http.RequestHeaderFields "headers_" "None" ~}}
+        response_ = self.send_request("{{ http.Method }}", uri_, query=query_, request=request_, headers=headers_)
+{{ for response in http.ValidResponses ~}}
+        if response_.status_code == {{ response.StatusCode + 0 }}:  # {{ response.StatusCode | StatusCodePhrase }}
+            return facility.Result(value={{ method.Name | PascalCase }}Response.from_data(response_.json()))
+{{ end # for response ~}}
+        return facility.Result(error=facility.Error.from_response(response_))
+{{ else # if http ~}}
+        raise NotImplementedError()
+{{ end # if http ... else ~}}
+{{ end # for method in Service.Methods | WhereNotObsolete ~}}
 
 
 # {{ CodeGenCommentText }}

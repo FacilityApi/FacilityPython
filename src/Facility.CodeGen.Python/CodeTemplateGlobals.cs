@@ -159,9 +159,36 @@ namespace Facility.CodeGen.Python
 			return text;
 		}
 
+		public static string PascalCase(string text)
+		{
+			text = Regex.Replace(text, @"_(\p{L})", x => x.Value.ToUpperInvariant());
+			if (char.IsLower(text[0]))
+			{
+				text = text.Substring(0, 1).ToUpperInvariant() + text.Substring(1);
+			}
+			return text;
+		}
+
 		public static string ToUpper(string text)
 		{
 			return text.ToUpperInvariant();
+		}
+
+		public static string RenderPathAsPythonFString(HttpMethodInfo http)
+		{
+			string text = http.Path;
+			string prefix = "";
+			foreach (var field in http.PathFields)
+			{
+				string key = "{" + field.Name + "}";
+				string value = SnakeCase(field.ServiceField.Name);
+				if (field.ServiceField.TypeName != "string")
+					value = $"str({value})";
+				text = text.Replace(key, "{quote(" + value + ")}");
+				prefix = "f";
+			}
+			text = $"{prefix}\"{text}\"";
+			return text;
 		}
 
 		private static string RenderDtoAsJsonValue(ServiceDtoInfo dtoInfo)

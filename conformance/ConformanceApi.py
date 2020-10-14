@@ -504,4 +504,696 @@ class HasWidget(facility.DTO):
         )
 
 
+class GetApiInfoResponse(facility.DTO):
+    """
+    Gets API information.
+
+    The name of the service should be `ConformanceApi`.
+    """
+    def __init__(
+        self,
+        service: str,
+        version: str,
+    ):
+        """
+        :param service: The name of the service.
+        :param version: The version of the service.
+        """
+        super().__init__()
+        if not isinstance(service, (str, type(None))):
+            raise ValueError(f"Invalid service: {service}")
+        self.service = service
+        if not isinstance(version, (str, type(None))):
+            raise ValueError(f"Invalid version: {version}")
+        self.version = version
+
+    @staticmethod
+    def from_data(data: dict) -> "GetApiInfoResponse":
+        return GetApiInfoResponse(
+            service=data.get("service"),
+            version=data.get("version"),
+        )
+
+
+class GetWidgetsResponse(facility.DTO):
+    """
+    Gets widgets.
+    """
+    def __init__(
+        self,
+        widgets: List[Widget],
+    ):
+        """
+        :param widgets: The widgets.
+        """
+        super().__init__()
+        if not isinstance(widgets, (list, type(None))):
+            raise ValueError(f"Invalid widgets: {widgets}")
+        self.widgets = widgets
+
+    @staticmethod
+    def from_data(data: dict) -> "GetWidgetsResponse":
+        return GetWidgetsResponse(
+            widgets=list(map(Widget.from_data, data["widgets"])) if "widgets" in data else None,
+        )
+
+
+class CreateWidgetResponse(facility.DTO):
+    """
+    Creates a new widget.
+    """
+    def __init__(
+        self,
+        widget: "Widget",
+        url: str,
+        e_tag: str,
+    ):
+        """
+        :param widget: The created widget.
+        :param url: The URL of the created widget.
+        :param e_tag: The ETag of the created widget.
+        """
+        super().__init__()
+        if not isinstance(widget, (Widget, type(None))):
+            raise ValueError(f"Invalid widget: {widget}")
+        self.widget = widget
+        if not isinstance(url, (str, type(None))):
+            raise ValueError(f"Invalid url: {url}")
+        self.url = url
+        if not isinstance(e_tag, (str, type(None))):
+            raise ValueError(f"Invalid e_tag: {e_tag}")
+        self.e_tag = e_tag
+
+    @staticmethod
+    def from_data(data: dict) -> "CreateWidgetResponse":
+        return CreateWidgetResponse(
+            widget=Widget.from_data(data["widget"]) if "widget" in data else None,
+            url=data.get("url"),
+            e_tag=data.get("e_tag"),
+        )
+
+
+class GetWidgetResponse(facility.DTO):
+    """
+    Gets the specified widget.
+    """
+    def __init__(
+        self,
+        widget: "Widget",
+        e_tag: str,
+        not_modified: bool,
+    ):
+        """
+        :param widget: The requested widget.
+        :param e_tag: The ETag of the widget.
+        :param not_modified: The widget still has the specified ETag.
+        """
+        super().__init__()
+        if not isinstance(widget, (Widget, type(None))):
+            raise ValueError(f"Invalid widget: {widget}")
+        self.widget = widget
+        if not isinstance(e_tag, (str, type(None))):
+            raise ValueError(f"Invalid e_tag: {e_tag}")
+        self.e_tag = e_tag
+        if not isinstance(not_modified, (bool, type(None))):
+            raise ValueError(f"Invalid not_modified: {not_modified}")
+        self.not_modified = not_modified
+
+    @staticmethod
+    def from_data(data: dict) -> "GetWidgetResponse":
+        return GetWidgetResponse(
+            widget=Widget.from_data(data["widget"]) if "widget" in data else None,
+            e_tag=data.get("e_tag"),
+            not_modified=data.get("not_modified"),
+        )
+
+
+class DeleteWidgetResponse(facility.DTO):
+    """
+    Deletes the specified widget.
+    """
+    def __init__(
+        self,
+        not_found: bool,
+        conflict: bool,
+    ):
+        """
+        :param not_found: The widget was not found.
+        :param conflict: The widget no longer has the specified ETag.
+        """
+        super().__init__()
+        if not isinstance(not_found, (bool, type(None))):
+            raise ValueError(f"Invalid not_found: {not_found}")
+        self.not_found = not_found
+        if not isinstance(conflict, (bool, type(None))):
+            raise ValueError(f"Invalid conflict: {conflict}")
+        self.conflict = conflict
+
+    @staticmethod
+    def from_data(data: dict) -> "DeleteWidgetResponse":
+        return DeleteWidgetResponse(
+            not_found=data.get("not_found"),
+            conflict=data.get("conflict"),
+        )
+
+
+class GetWidgetBatchResponse(facility.DTO):
+    """
+    Gets the specified widgets.
+    """
+    def __init__(
+        self,
+        results: List[facility.Result],
+    ):
+        """
+        :param results: The widget results.
+        """
+        super().__init__()
+        if not isinstance(results, (list, type(None))):
+            raise ValueError(f"Invalid results: {results}")
+        self.results = results
+
+    @staticmethod
+    def from_data(data: dict) -> "GetWidgetBatchResponse":
+        return GetWidgetBatchResponse(
+            results=data.get("results"),
+        )
+
+
+class MirrorFieldsResponse(facility.DTO):
+    def __init__(
+        self,
+        field: "Any",
+        matrix: List[List[List[float]]],
+    ):
+        """
+        :param field:
+        :param matrix:
+        """
+        super().__init__()
+        if not isinstance(field, (Any, type(None))):
+            raise ValueError(f"Invalid field: {field}")
+        self.field = field
+        if not isinstance(matrix, (list, type(None))):
+            raise ValueError(f"Invalid matrix: {matrix}")
+        self.matrix = matrix
+
+    @staticmethod
+    def from_data(data: dict) -> "MirrorFieldsResponse":
+        return MirrorFieldsResponse(
+            field=Any.from_data(data["field"]) if "field" in data else None,
+            matrix=data.get("matrix"),
+        )
+
+
+class CheckQueryResponse(facility.DTO):
+    def __init__(
+        self,
+    ):
+        """
+        """
+        super().__init__()
+
+    @staticmethod
+    def from_data(data: dict) -> "CheckQueryResponse":
+        return CheckQueryResponse(
+        )
+
+
+class CheckPathResponse(facility.DTO):
+    def __init__(
+        self,
+    ):
+        """
+        """
+        super().__init__()
+
+    @staticmethod
+    def from_data(data: dict) -> "CheckPathResponse":
+        return CheckPathResponse(
+        )
+
+
+class MirrorHeadersResponse(facility.DTO):
+    def __init__(
+        self,
+        string: str,
+        boolean: bool,
+        double: float,
+        int32: int,
+        int64: int,
+        decimal: Decimal,
+        enum_: Answer,
+    ):
+        """
+        :param string:
+        :param boolean:
+        :param double:
+        :param int32:
+        :param int64:
+        :param decimal:
+        :param enum_:
+        """
+        super().__init__()
+        if not isinstance(string, (str, type(None))):
+            raise ValueError(f"Invalid string: {string}")
+        self.string = string
+        if not isinstance(boolean, (bool, type(None))):
+            raise ValueError(f"Invalid boolean: {boolean}")
+        self.boolean = boolean
+        if not isinstance(double, (float, type(None))):
+            raise ValueError(f"Invalid double: {double}")
+        self.double = double
+        if not isinstance(int32, (int, type(None))):
+            raise ValueError(f"Invalid int32: {int32}")
+        self.int32 = int32
+        if not isinstance(int64, (int, type(None))):
+            raise ValueError(f"Invalid int64: {int64}")
+        self.int64 = int64
+        if not isinstance(decimal, (Decimal, type(None))):
+            raise ValueError(f"Invalid decimal: {decimal}")
+        self.decimal = decimal
+        if not isinstance(enum_, (Answer, type(None))):
+            raise ValueError(f"Invalid enum_: {enum_}")
+        self.enum_ = enum_
+
+    @staticmethod
+    def from_data(data: dict) -> "MirrorHeadersResponse":
+        return MirrorHeadersResponse(
+            string=data.get("string"),
+            boolean=data.get("boolean"),
+            double=data.get("double"),
+            int32=data.get("int32"),
+            int64=data.get("int64"),
+            decimal=data.get("decimal"),
+            enum_=data.get("enum_"),
+        )
+
+
+class MixedResponse(facility.DTO):
+    def __init__(
+        self,
+        header: str,
+        normal: str,
+        body: object,
+        empty: bool,
+    ):
+        """
+        :param header:
+        :param normal:
+        :param body:
+        :param empty:
+        """
+        super().__init__()
+        if not isinstance(header, (str, type(None))):
+            raise ValueError(f"Invalid header: {header}")
+        self.header = header
+        if not isinstance(normal, (str, type(None))):
+            raise ValueError(f"Invalid normal: {normal}")
+        self.normal = normal
+        if not isinstance(body, (object, type(None))):
+            raise ValueError(f"Invalid body: {body}")
+        self.body = body
+        if not isinstance(empty, (bool, type(None))):
+            raise ValueError(f"Invalid empty: {empty}")
+        self.empty = empty
+
+    @staticmethod
+    def from_data(data: dict) -> "MixedResponse":
+        return MixedResponse(
+            header=data.get("header"),
+            normal=data.get("normal"),
+            body=data.get("body"),
+            empty=data.get("empty"),
+        )
+
+
+class RequiredResponse(facility.DTO):
+    def __init__(
+        self,
+        normal: str,
+    ):
+        """
+        :param normal:
+        """
+        super().__init__()
+        if not isinstance(normal, (str, type(None))):
+            raise ValueError(f"Invalid normal: {normal}")
+        self.normal = normal
+
+    @staticmethod
+    def from_data(data: dict) -> "RequiredResponse":
+        return RequiredResponse(
+            normal=data.get("normal"),
+        )
+
+
+class Client(facility.ClientBase):
+    def __init__(self, base_uri="", headers=None, oauth=None):
+        super(Client, self).__init__(base_uri=base_uri, headers=headers, oauth=oauth)
+
+    def get_api_info(self) -> facility.Result[GetApiInfoResponse]:
+        """
+        Gets API information.
+
+        The name of the service should be `ConformanceApi`.
+        """
+        uri_ = "/"
+        query_ = dict()
+        request_ = None
+        headers_ = None
+        response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(value=GetApiInfoResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def get_widgets(
+        self, *,
+        query: str = None,
+    ) -> facility.Result[GetWidgetsResponse]:
+        """
+        Gets widgets.
+
+        :param query: The query.
+        """
+        uri_ = "/widgets"
+        query_ = dict()
+        if query is not None:
+            query_["query"] = query
+        request_ = None
+        headers_ = None
+        response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(value=GetWidgetsResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def create_widget(
+        self, *,
+        widget: Widget = None,
+    ) -> facility.Result[CreateWidgetResponse]:
+        """
+        Creates a new widget.
+
+        :param widget: The widget to create.
+        """
+        uri_ = "/widgets"
+        query_ = dict()
+        request_ = widget
+        headers_ = None
+        response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 201:  # Created
+            return facility.Result(value=CreateWidgetResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def get_widget(
+        self, *,
+        id_: int,
+        if_not_etag: str = None,
+    ) -> facility.Result[GetWidgetResponse]:
+        """
+        Gets the specified widget.
+
+        :param id_: The widget ID.
+        :param if_not_etag: Don't get the widget if it has this ETag.
+        """
+        uri_ = f"/widgets/{quote(str(id_))}"
+        query_ = dict()
+        request_ = None
+        headers_ = dict()
+        if if_not_etag is not None:
+            headers_["ifNotETag"] = if_not_etag
+        response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(value=GetWidgetResponse.from_data(response_.json()))
+        if response_.status_code == 304:  # Not Modified
+            return facility.Result(value=GetWidgetResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def delete_widget(
+        self, *,
+        id_: int = None,
+        if_etag: str = None,
+    ) -> facility.Result[DeleteWidgetResponse]:
+        """
+        Deletes the specified widget.
+
+        :param id_: The widget ID.
+        :param if_etag: Don't delete the widget unless it has this ETag.
+        """
+        uri_ = f"/widgets/{quote(str(id_))}"
+        query_ = dict()
+        request_ = None
+        headers_ = dict()
+        if if_etag is not None:
+            headers_["ifETag"] = if_etag
+        response_ = self.send_request("DELETE", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 204:  # No Content
+            return facility.Result(value=DeleteWidgetResponse.from_data(response_.json()))
+        if response_.status_code == 404:  # Not Found
+            return facility.Result(value=DeleteWidgetResponse.from_data(response_.json()))
+        if response_.status_code == 409:  # Conflict
+            return facility.Result(value=DeleteWidgetResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def get_widget_batch(
+        self, *,
+        ids: List[int],
+    ) -> facility.Result[GetWidgetBatchResponse]:
+        """
+        Gets the specified widgets.
+
+        :param ids: The IDs of the widgets to return.
+        """
+        uri_ = "/widgets/get"
+        query_ = dict()
+        request_ = ids
+        headers_ = None
+        response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(value=GetWidgetBatchResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def mirror_fields(
+        self, *,
+        field: Any = None,
+        matrix: List[List[List[float]]] = None,
+    ) -> facility.Result[MirrorFieldsResponse]:
+        """
+
+        :param field:
+        :param matrix:
+        """
+        uri_ = "/mirrorFields"
+        query_ = dict()
+        request_ = dict()
+        if field is not None:
+            request_["field"] = field.to_data()
+        if matrix is not None:
+            request_["matrix"] = [[[v3 for v3 in v2] for v2 in v1] for v1 in matrix]
+        headers_ = None
+        response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(value=MirrorFieldsResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def check_query(
+        self, *,
+        string: str = None,
+        boolean: bool = None,
+        double: float = None,
+        int32: int = None,
+        int64: int = None,
+        decimal: Decimal = None,
+        enum_: Answer = None,
+    ) -> facility.Result[CheckQueryResponse]:
+        """
+
+        :param string:
+        :param boolean:
+        :param double:
+        :param int32:
+        :param int64:
+        :param decimal:
+        :param enum_:
+        """
+        uri_ = "/checkQuery"
+        query_ = dict()
+        if string is not None:
+            query_["string"] = string
+        if boolean is not None:
+            query_["boolean"] = boolean
+        if double is not None:
+            query_["double"] = double
+        if int32 is not None:
+            query_["int32"] = int32
+        if int64 is not None:
+            query_["int64"] = int64
+        if decimal is not None:
+            query_["decimal"] = decimal
+        if enum_ is not None:
+            query_["enum"] = enum_
+        request_ = None
+        headers_ = None
+        response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(value=CheckQueryResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def check_path(
+        self, *,
+        string: str = None,
+        boolean: bool = None,
+        double: float = None,
+        int32: int = None,
+        int64: int = None,
+        decimal: Decimal = None,
+        enum_: Answer = None,
+    ) -> facility.Result[CheckPathResponse]:
+        """
+
+        :param string:
+        :param boolean:
+        :param double:
+        :param int32:
+        :param int64:
+        :param decimal:
+        :param enum_:
+        """
+        uri_ = f"/mirror/{quote(string)}/{quote(str(boolean))}/{quote(str(double))}/{quote(str(int32))}/{quote(str(int64))}/{quote(str(decimal))}/{quote(str(enum_))}"
+        query_ = dict()
+        request_ = None
+        headers_ = None
+        response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(value=CheckPathResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def mirror_headers(
+        self, *,
+        string: str = None,
+        boolean: bool = None,
+        double: float = None,
+        int32: int = None,
+        int64: int = None,
+        decimal: Decimal = None,
+        enum_: Answer = None,
+    ) -> facility.Result[MirrorHeadersResponse]:
+        """
+
+        :param string:
+        :param boolean:
+        :param double:
+        :param int32:
+        :param int64:
+        :param decimal:
+        :param enum_:
+        """
+        uri_ = "/mirrorHeaders"
+        query_ = dict()
+        request_ = None
+        headers_ = dict()
+        if string is not None:
+            headers_["string"] = string
+        if boolean is not None:
+            headers_["boolean"] = boolean
+        if double is not None:
+            headers_["double"] = double
+        if int32 is not None:
+            headers_["int32"] = int32
+        if int64 is not None:
+            headers_["int64"] = int64
+        if decimal is not None:
+            headers_["decimal"] = decimal
+        if enum_ is not None:
+            headers_["enum"] = enum_
+        response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(value=MirrorHeadersResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def mixed(
+        self, *,
+        path: str = None,
+        query: str = None,
+        header: str = None,
+        normal: str = None,
+    ) -> facility.Result[MixedResponse]:
+        """
+
+        :param path:
+        :param query:
+        :param header:
+        :param normal:
+        """
+        uri_ = f"/mixed/{quote(path)}"
+        query_ = dict()
+        if query is not None:
+            query_["query"] = query
+        request_ = dict()
+        if normal is not None:
+            request_["normal"] = normal
+        headers_ = dict()
+        if header is not None:
+            headers_["header"] = header
+        response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(value=MixedResponse.from_data(response_.json()))
+        if response_.status_code == 202:  # Accepted
+            return facility.Result(value=MixedResponse.from_data(response_.json()))
+        if response_.status_code == 204:  # No Content
+            return facility.Result(value=MixedResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+    def required(
+        self, *,
+        query: str,
+        normal: str,
+        widget: Widget = None,
+        widgets: List[Widget] = None,
+        widget_matrix: List[List[Widget]] = None,
+        widget_result: facility.Result = None,
+        widget_results: List[facility.Result] = None,
+        widget_map: Dict[str, Widget] = None,
+        has_widget: HasWidget = None,
+    ) -> facility.Result[RequiredResponse]:
+        """
+
+        :param query:
+        :param normal:
+        :param widget:
+        :param widgets:
+        :param widget_matrix:
+        :param widget_result:
+        :param widget_results:
+        :param widget_map:
+        :param has_widget:
+        """
+        uri_ = "/required"
+        query_ = dict()
+        if query is not None:
+            query_["query"] = query
+        request_ = dict()
+        if normal is not None:
+            request_["normal"] = normal
+        if widget is not None:
+            request_["widget"] = widget.to_data()
+        if widgets is not None:
+            request_["widgets"] = [v1.to_data() for v1 in widgets]
+        if widget_matrix is not None:
+            request_["widgetMatrix"] = [[v2.to_data() for v2 in v1] for v1 in widget_matrix]
+        if widget_result is not None:
+            request_["widgetResult"] = widget_result
+        if widget_results is not None:
+            request_["widgetResults"] = [v1 for v1 in widget_results]
+        if widget_map is not None:
+            request_["widgetMap"] = {k1: v1.to_data() for k1, v1 in widget_map.items()}
+        if has_widget is not None:
+            request_["hasWidget"] = has_widget.to_data()
+        headers_ = None
+        response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(value=RequiredResponse.from_data(response_.json()))
+        return facility.Result(error=facility.Error.from_response(response_))
+
+
 # DO NOT EDIT: generated by fsdgenpython
