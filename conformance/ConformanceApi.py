@@ -43,14 +43,15 @@ The tester should report a test failure if:
   response or error.
 """
 
+import decimal
+import enum
+import typing
+from urllib.parse import quote as uri_encode
+
 import facility
-from enum import Enum
-from decimal import Decimal
-from urllib.parse import quote
-from typing import Dict, List
 
 
-class Answer(Enum):
+class Answer(enum.Enum):
     """
     One of three answers.
 
@@ -85,7 +86,7 @@ class Widget(facility.DTO):
         self.name = name
 
     @staticmethod
-    def from_data(data: dict) -> "Widget":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "Widget":
         return Widget(
             id_=data.get("id_"),
             name=data.get("name"),
@@ -100,7 +101,7 @@ class Any(facility.DTO):
         double: float,
         int32: int,
         int64: int,
-        decimal: Decimal,
+        decimal_: decimal.Decimal,
         bytes_: bytes,
         object_: object,
         error: facility.Error,
@@ -116,7 +117,7 @@ class Any(facility.DTO):
         :param double:
         :param int32:
         :param int64:
-        :param decimal:
+        :param decimal_:
         :param bytes_:
         :param object_:
         :param error:
@@ -142,9 +143,9 @@ class Any(facility.DTO):
         if not isinstance(int64, (int, type(None))):
             raise ValueError(f"Invalid int64: {int64}")
         self.int64 = int64
-        if not isinstance(decimal, (Decimal, type(None))):
-            raise ValueError(f"Invalid decimal: {decimal}")
-        self.decimal = decimal
+        if not isinstance(decimal_, (decimal.Decimal, type(None))):
+            raise ValueError(f"Invalid decimal_: {decimal_}")
+        self.decimal_ = decimal_
         if not isinstance(bytes_, (bytes, type(None))):
             raise ValueError(f"Invalid bytes_: {bytes_}")
         self.bytes_ = bytes_
@@ -171,14 +172,14 @@ class Any(facility.DTO):
         self.result = result
 
     @staticmethod
-    def from_data(data: dict) -> "Any":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "Any":
         return Any(
             string=data.get("string"),
             boolean=data.get("boolean"),
             double=data.get("double"),
             int32=data.get("int32"),
             int64=data.get("int64"),
-            decimal=data.get("decimal"),
+            decimal_=data.get("decimal_"),
             bytes_=data.get("bytes_"),
             object_=data.get("object_"),
             error=data.get("error"),
@@ -193,20 +194,20 @@ class Any(facility.DTO):
 class AnyArray(facility.DTO):
     def __init__(
         self,
-        string: List[str],
-        boolean: List[bool],
-        double: List[float],
-        int32: List[int],
-        int64: List[int],
-        decimal: List[Decimal],
-        bytes_: List[bytes],
-        object_: List[object],
-        error: List[facility.Error],
-        data: List[Any],
-        enum_: List[Answer],
-        array: List[List[int]],
-        map_: List[Dict[str, int]],
-        result: List[facility.Result],
+        string: typing.List[str],
+        boolean: typing.List[bool],
+        double: typing.List[float],
+        int32: typing.List[int],
+        int64: typing.List[int],
+        decimal_: typing.List[decimal.Decimal],
+        bytes_: typing.List[bytes],
+        object_: typing.List[object],
+        error: typing.List[facility.Error],
+        data: typing.List[Any],
+        enum_: typing.List[Answer],
+        array: typing.List[typing.List[int]],
+        map_: typing.List[typing.Dict[str, int]],
+        result: typing.List[facility.Result[int]],
     ):
         """
         :param string:
@@ -214,7 +215,7 @@ class AnyArray(facility.DTO):
         :param double:
         :param int32:
         :param int64:
-        :param decimal:
+        :param decimal_:
         :param bytes_:
         :param object_:
         :param error:
@@ -240,9 +241,9 @@ class AnyArray(facility.DTO):
         if not isinstance(int64, (list, type(None))):
             raise ValueError(f"Invalid int64: {int64}")
         self.int64 = int64
-        if not isinstance(decimal, (list, type(None))):
-            raise ValueError(f"Invalid decimal: {decimal}")
-        self.decimal = decimal
+        if not isinstance(decimal_, (list, type(None))):
+            raise ValueError(f"Invalid decimal_: {decimal_}")
+        self.decimal_ = decimal_
         if not isinstance(bytes_, (list, type(None))):
             raise ValueError(f"Invalid bytes_: {bytes_}")
         self.bytes_ = bytes_
@@ -269,14 +270,14 @@ class AnyArray(facility.DTO):
         self.result = result
 
     @staticmethod
-    def from_data(data: dict) -> "AnyArray":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "AnyArray":
         return AnyArray(
             string=data.get("string"),
             boolean=data.get("boolean"),
             double=data.get("double"),
             int32=data.get("int32"),
             int64=data.get("int64"),
-            decimal=data.get("decimal"),
+            decimal_=data.get("decimal_"),
             bytes_=data.get("bytes_"),
             object_=data.get("object_"),
             error=data.get("error"),
@@ -291,20 +292,20 @@ class AnyArray(facility.DTO):
 class AnyMap(facility.DTO):
     def __init__(
         self,
-        string: Dict[str, str],
-        boolean: Dict[str, bool],
-        double: Dict[str, float],
-        int32: Dict[str, int],
-        int64: Dict[str, int],
-        decimal: Dict[str, Decimal],
-        bytes_: Dict[str, bytes],
-        object_: Dict[str, object],
-        error: Dict[str, facility.Error],
-        data: Dict[str, Any],
-        enum_: Dict[str, Answer],
-        array: Dict[str, List[int]],
-        map_: Dict[str, Dict[str, int]],
-        result: Dict[str, facility.Result],
+        string: typing.Dict[str, str],
+        boolean: typing.Dict[str, bool],
+        double: typing.Dict[str, float],
+        int32: typing.Dict[str, int],
+        int64: typing.Dict[str, int],
+        decimal_: typing.Dict[str, decimal.Decimal],
+        bytes_: typing.Dict[str, bytes],
+        object_: typing.Dict[str, object],
+        error: typing.Dict[str, facility.Error],
+        data: typing.Dict[str, Any],
+        enum_: typing.Dict[str, Answer],
+        array: typing.Dict[str, typing.List[int]],
+        map_: typing.Dict[str, typing.Dict[str, int]],
+        result: typing.Dict[str, facility.Result[int]],
     ):
         """
         :param string:
@@ -312,7 +313,7 @@ class AnyMap(facility.DTO):
         :param double:
         :param int32:
         :param int64:
-        :param decimal:
+        :param decimal_:
         :param bytes_:
         :param object_:
         :param error:
@@ -338,9 +339,9 @@ class AnyMap(facility.DTO):
         if not isinstance(int64, (dict, type(None))):
             raise ValueError(f"Invalid int64: {int64}")
         self.int64 = int64
-        if not isinstance(decimal, (dict, type(None))):
-            raise ValueError(f"Invalid decimal: {decimal}")
-        self.decimal = decimal
+        if not isinstance(decimal_, (dict, type(None))):
+            raise ValueError(f"Invalid decimal_: {decimal_}")
+        self.decimal_ = decimal_
         if not isinstance(bytes_, (dict, type(None))):
             raise ValueError(f"Invalid bytes_: {bytes_}")
         self.bytes_ = bytes_
@@ -367,14 +368,14 @@ class AnyMap(facility.DTO):
         self.result = result
 
     @staticmethod
-    def from_data(data: dict) -> "AnyMap":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "AnyMap":
         return AnyMap(
             string=data.get("string"),
             boolean=data.get("boolean"),
             double=data.get("double"),
             int32=data.get("int32"),
             int64=data.get("int64"),
-            decimal=data.get("decimal"),
+            decimal_=data.get("decimal_"),
             bytes_=data.get("bytes_"),
             object_=data.get("object_"),
             error=data.get("error"),
@@ -389,20 +390,20 @@ class AnyMap(facility.DTO):
 class AnyResult(facility.DTO):
     def __init__(
         self,
-        string: facility.Result,
-        boolean: facility.Result,
-        double: facility.Result,
-        int32: facility.Result,
-        int64: facility.Result,
-        decimal: facility.Result,
-        bytes_: facility.Result,
-        object_: facility.Result,
-        error: facility.Result,
-        data: facility.Result,
-        enum_: facility.Result,
-        array: facility.Result,
-        map_: facility.Result,
-        result: facility.Result,
+        string: facility.Result[str],
+        boolean: facility.Result[bool],
+        double: facility.Result[float],
+        int32: facility.Result[int],
+        int64: facility.Result[int],
+        decimal_: facility.Result[decimal.Decimal],
+        bytes_: facility.Result[bytes],
+        object_: facility.Result[object],
+        error: facility.Result[facility.Error],
+        data: facility.Result[Any],
+        enum_: facility.Result[Answer],
+        array: facility.Result[typing.List[int]],
+        map_: facility.Result[typing.Dict[str, int]],
+        result: facility.Result[facility.Result[int]],
     ):
         """
         :param string:
@@ -410,7 +411,7 @@ class AnyResult(facility.DTO):
         :param double:
         :param int32:
         :param int64:
-        :param decimal:
+        :param decimal_:
         :param bytes_:
         :param object_:
         :param error:
@@ -436,9 +437,9 @@ class AnyResult(facility.DTO):
         if not isinstance(int64, (facility.Result, type(None))):
             raise ValueError(f"Invalid int64: {int64}")
         self.int64 = int64
-        if not isinstance(decimal, (facility.Result, type(None))):
-            raise ValueError(f"Invalid decimal: {decimal}")
-        self.decimal = decimal
+        if not isinstance(decimal_, (facility.Result, type(None))):
+            raise ValueError(f"Invalid decimal_: {decimal_}")
+        self.decimal_ = decimal_
         if not isinstance(bytes_, (facility.Result, type(None))):
             raise ValueError(f"Invalid bytes_: {bytes_}")
         self.bytes_ = bytes_
@@ -465,14 +466,14 @@ class AnyResult(facility.DTO):
         self.result = result
 
     @staticmethod
-    def from_data(data: dict) -> "AnyResult":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "AnyResult":
         return AnyResult(
             string=data.get("string"),
             boolean=data.get("boolean"),
             double=data.get("double"),
             int32=data.get("int32"),
             int64=data.get("int64"),
-            decimal=data.get("decimal"),
+            decimal_=data.get("decimal_"),
             bytes_=data.get("bytes_"),
             object_=data.get("object_"),
             error=data.get("error"),
@@ -498,7 +499,7 @@ class HasWidget(facility.DTO):
         self.widget = widget
 
     @staticmethod
-    def from_data(data: dict) -> "HasWidget":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "HasWidget":
         return HasWidget(
             widget=Widget.from_data(data["widget"]) if "widget" in data else None,
         )
@@ -528,7 +529,7 @@ class GetApiInfoResponse(facility.DTO):
         self.version = version
 
     @staticmethod
-    def from_data(data: dict) -> "GetApiInfoResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "GetApiInfoResponse":
         return GetApiInfoResponse(
             service=data.get("service"),
             version=data.get("version"),
@@ -541,7 +542,7 @@ class GetWidgetsResponse(facility.DTO):
     """
     def __init__(
         self,
-        widgets: List[Widget],
+        widgets: typing.List[Widget],
     ):
         """
         :param widgets: The widgets.
@@ -552,7 +553,7 @@ class GetWidgetsResponse(facility.DTO):
         self.widgets = widgets
 
     @staticmethod
-    def from_data(data: dict) -> "GetWidgetsResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "GetWidgetsResponse":
         return GetWidgetsResponse(
             widgets=list(map(Widget.from_data, data["widgets"])) if "widgets" in data else None,
         )
@@ -585,7 +586,7 @@ class CreateWidgetResponse(facility.DTO):
         self.e_tag = e_tag
 
     @staticmethod
-    def from_data(data: dict) -> "CreateWidgetResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "CreateWidgetResponse":
         return CreateWidgetResponse(
             widget=Widget.from_data(data["widget"]) if "widget" in data else None,
             url=data.get("url"),
@@ -620,7 +621,7 @@ class GetWidgetResponse(facility.DTO):
         self.not_modified = not_modified
 
     @staticmethod
-    def from_data(data: dict) -> "GetWidgetResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "GetWidgetResponse":
         return GetWidgetResponse(
             widget=Widget.from_data(data["widget"]) if "widget" in data else None,
             e_tag=data.get("e_tag"),
@@ -650,7 +651,7 @@ class DeleteWidgetResponse(facility.DTO):
         self.conflict = conflict
 
     @staticmethod
-    def from_data(data: dict) -> "DeleteWidgetResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "DeleteWidgetResponse":
         return DeleteWidgetResponse(
             not_found=data.get("not_found"),
             conflict=data.get("conflict"),
@@ -663,7 +664,7 @@ class GetWidgetBatchResponse(facility.DTO):
     """
     def __init__(
         self,
-        results: List[facility.Result],
+        results: typing.List[facility.Result[Widget]],
     ):
         """
         :param results: The widget results.
@@ -674,7 +675,7 @@ class GetWidgetBatchResponse(facility.DTO):
         self.results = results
 
     @staticmethod
-    def from_data(data: dict) -> "GetWidgetBatchResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "GetWidgetBatchResponse":
         return GetWidgetBatchResponse(
             results=data.get("results"),
         )
@@ -684,7 +685,7 @@ class MirrorFieldsResponse(facility.DTO):
     def __init__(
         self,
         field: "Any",
-        matrix: List[List[List[float]]],
+        matrix: typing.List[typing.List[typing.List[float]]],
     ):
         """
         :param field:
@@ -699,7 +700,7 @@ class MirrorFieldsResponse(facility.DTO):
         self.matrix = matrix
 
     @staticmethod
-    def from_data(data: dict) -> "MirrorFieldsResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "MirrorFieldsResponse":
         return MirrorFieldsResponse(
             field=Any.from_data(data["field"]) if "field" in data else None,
             matrix=data.get("matrix"),
@@ -715,7 +716,7 @@ class CheckQueryResponse(facility.DTO):
         super().__init__()
 
     @staticmethod
-    def from_data(data: dict) -> "CheckQueryResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "CheckQueryResponse":
         return CheckQueryResponse(
         )
 
@@ -729,7 +730,7 @@ class CheckPathResponse(facility.DTO):
         super().__init__()
 
     @staticmethod
-    def from_data(data: dict) -> "CheckPathResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "CheckPathResponse":
         return CheckPathResponse(
         )
 
@@ -742,7 +743,7 @@ class MirrorHeadersResponse(facility.DTO):
         double: float,
         int32: int,
         int64: int,
-        decimal: Decimal,
+        decimal_: decimal.Decimal,
         enum_: Answer,
     ):
         """
@@ -751,7 +752,7 @@ class MirrorHeadersResponse(facility.DTO):
         :param double:
         :param int32:
         :param int64:
-        :param decimal:
+        :param decimal_:
         :param enum_:
         """
         super().__init__()
@@ -770,22 +771,22 @@ class MirrorHeadersResponse(facility.DTO):
         if not isinstance(int64, (int, type(None))):
             raise ValueError(f"Invalid int64: {int64}")
         self.int64 = int64
-        if not isinstance(decimal, (Decimal, type(None))):
-            raise ValueError(f"Invalid decimal: {decimal}")
-        self.decimal = decimal
+        if not isinstance(decimal_, (decimal.Decimal, type(None))):
+            raise ValueError(f"Invalid decimal_: {decimal_}")
+        self.decimal_ = decimal_
         if not isinstance(enum_, (Answer, type(None))):
             raise ValueError(f"Invalid enum_: {enum_}")
         self.enum_ = enum_
 
     @staticmethod
-    def from_data(data: dict) -> "MirrorHeadersResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "MirrorHeadersResponse":
         return MirrorHeadersResponse(
             string=data.get("string"),
             boolean=data.get("boolean"),
             double=data.get("double"),
             int32=data.get("int32"),
             int64=data.get("int64"),
-            decimal=data.get("decimal"),
+            decimal_=data.get("decimal_"),
             enum_=data.get("enum_"),
         )
 
@@ -819,7 +820,7 @@ class MixedResponse(facility.DTO):
         self.empty = empty
 
     @staticmethod
-    def from_data(data: dict) -> "MixedResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "MixedResponse":
         return MixedResponse(
             header=data.get("header"),
             normal=data.get("normal"),
@@ -842,15 +843,19 @@ class RequiredResponse(facility.DTO):
         self.normal = normal
 
     @staticmethod
-    def from_data(data: dict) -> "RequiredResponse":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "RequiredResponse":
         return RequiredResponse(
             normal=data.get("normal"),
         )
 
 
 class Client(facility.ClientBase):
-    def __init__(self, base_uri="", headers=None, oauth=None):
-        super(Client, self).__init__(base_uri=base_uri, headers=headers, oauth=oauth)
+    def __init__(self,
+                 base_uri: str = "", *,
+                 headers: typing.Optional[typing.Dict[str, str]] = None,
+                 oauth: typing.Optional[facility.OAuthSettings] = None,
+                 max_retries: int = 0):
+        super().__init__(base_uri=base_uri, headers=headers, oauth=oauth, max_retries=max_retries)
 
     def get_api_info(self) -> facility.Result[GetApiInfoResponse]:
         """
@@ -916,7 +921,7 @@ class Client(facility.ClientBase):
         :param id_: The widget ID.
         :param if_not_etag: Don't get the widget if it has this ETag.
         """
-        uri_ = f"/widgets/{quote(str(id_))}"
+        uri_ = f"/widgets/{uri_encode(str(id_))}"
         query_ = dict()
         request_ = None
         headers_ = dict()
@@ -940,7 +945,7 @@ class Client(facility.ClientBase):
         :param id_: The widget ID.
         :param if_etag: Don't delete the widget unless it has this ETag.
         """
-        uri_ = f"/widgets/{quote(str(id_))}"
+        uri_ = f"/widgets/{uri_encode(str(id_))}"
         query_ = dict()
         request_ = None
         headers_ = dict()
@@ -957,7 +962,7 @@ class Client(facility.ClientBase):
 
     def get_widget_batch(
         self, *,
-        ids: List[int],
+        ids: typing.List[int],
     ) -> facility.Result[GetWidgetBatchResponse]:
         """
         Gets the specified widgets.
@@ -976,7 +981,7 @@ class Client(facility.ClientBase):
     def mirror_fields(
         self, *,
         field: Any = None,
-        matrix: List[List[List[float]]] = None,
+        matrix: typing.List[typing.List[typing.List[float]]] = None,
     ) -> facility.Result[MirrorFieldsResponse]:
         """
 
@@ -1003,7 +1008,7 @@ class Client(facility.ClientBase):
         double: float = None,
         int32: int = None,
         int64: int = None,
-        decimal: Decimal = None,
+        decimal_: decimal.Decimal = None,
         enum_: Answer = None,
     ) -> facility.Result[CheckQueryResponse]:
         """
@@ -1013,7 +1018,7 @@ class Client(facility.ClientBase):
         :param double:
         :param int32:
         :param int64:
-        :param decimal:
+        :param decimal_:
         :param enum_:
         """
         uri_ = "/checkQuery"
@@ -1028,8 +1033,8 @@ class Client(facility.ClientBase):
             query_["int32"] = int32
         if int64 is not None:
             query_["int64"] = int64
-        if decimal is not None:
-            query_["decimal"] = decimal
+        if decimal_ is not None:
+            query_["decimal"] = decimal_
         if enum_ is not None:
             query_["enum"] = enum_
         request_ = None
@@ -1046,7 +1051,7 @@ class Client(facility.ClientBase):
         double: float = None,
         int32: int = None,
         int64: int = None,
-        decimal: Decimal = None,
+        decimal_: decimal.Decimal = None,
         enum_: Answer = None,
     ) -> facility.Result[CheckPathResponse]:
         """
@@ -1056,10 +1061,10 @@ class Client(facility.ClientBase):
         :param double:
         :param int32:
         :param int64:
-        :param decimal:
+        :param decimal_:
         :param enum_:
         """
-        uri_ = f"/mirror/{quote(string)}/{quote(str(boolean))}/{quote(str(double))}/{quote(str(int32))}/{quote(str(int64))}/{quote(str(decimal))}/{quote(str(enum_))}"
+        uri_ = f"/mirror/{uri_encode(string)}/{uri_encode(str(boolean))}/{uri_encode(str(double))}/{uri_encode(str(int32))}/{uri_encode(str(int64))}/{uri_encode(str(decimal_))}/{uri_encode(str(enum_))}"
         query_ = dict()
         request_ = None
         headers_ = None
@@ -1075,7 +1080,7 @@ class Client(facility.ClientBase):
         double: float = None,
         int32: int = None,
         int64: int = None,
-        decimal: Decimal = None,
+        decimal_: decimal.Decimal = None,
         enum_: Answer = None,
     ) -> facility.Result[MirrorHeadersResponse]:
         """
@@ -1085,7 +1090,7 @@ class Client(facility.ClientBase):
         :param double:
         :param int32:
         :param int64:
-        :param decimal:
+        :param decimal_:
         :param enum_:
         """
         uri_ = "/mirrorHeaders"
@@ -1102,8 +1107,8 @@ class Client(facility.ClientBase):
             headers_["int32"] = int32
         if int64 is not None:
             headers_["int64"] = int64
-        if decimal is not None:
-            headers_["decimal"] = decimal
+        if decimal_ is not None:
+            headers_["decimal"] = decimal_
         if enum_ is not None:
             headers_["enum"] = enum_
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
@@ -1125,7 +1130,7 @@ class Client(facility.ClientBase):
         :param header:
         :param normal:
         """
-        uri_ = f"/mixed/{quote(path)}"
+        uri_ = f"/mixed/{uri_encode(path)}"
         query_ = dict()
         if query is not None:
             query_["query"] = query
@@ -1149,11 +1154,11 @@ class Client(facility.ClientBase):
         query: str,
         normal: str,
         widget: Widget = None,
-        widgets: List[Widget] = None,
-        widget_matrix: List[List[Widget]] = None,
-        widget_result: facility.Result = None,
-        widget_results: List[facility.Result] = None,
-        widget_map: Dict[str, Widget] = None,
+        widgets: typing.List[Widget] = None,
+        widget_matrix: typing.List[typing.List[Widget]] = None,
+        widget_result: facility.Result[Widget] = None,
+        widget_results: typing.List[facility.Result[Widget]] = None,
+        widget_map: typing.Dict[str, Widget] = None,
         has_widget: HasWidget = None,
     ) -> facility.Result[RequiredResponse]:
         """

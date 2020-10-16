@@ -38,7 +38,7 @@ namespace Facility.CodeGen.Python
 				ServiceTypeKind.Double => "float",
 				ServiceTypeKind.Int32 => "int",
 				ServiceTypeKind.Int64 => "int",
-				ServiceTypeKind.Decimal => "Decimal",
+				ServiceTypeKind.Decimal => "decimal.Decimal",
 				ServiceTypeKind.Bytes => "bytes",
 				ServiceTypeKind.Object => "object",
 				ServiceTypeKind.Error => "facility.Error",
@@ -58,15 +58,15 @@ namespace Facility.CodeGen.Python
 				ServiceTypeKind.Double => "float",
 				ServiceTypeKind.Int32 => "int",
 				ServiceTypeKind.Int64 => "int",
-				ServiceTypeKind.Decimal => "Decimal",
+				ServiceTypeKind.Decimal => "decimal.Decimal",
 				ServiceTypeKind.Bytes => "bytes",
 				ServiceTypeKind.Object => "object",
 				ServiceTypeKind.Error => "facility.Error",
 				ServiceTypeKind.Dto => typeInfo.Dto!.Name,
 				ServiceTypeKind.Enum => typeInfo.Enum!.Name,
-				ServiceTypeKind.Result => "facility.Result",  // TODO: parameterize
-				ServiceTypeKind.Array => $"List[{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
-				ServiceTypeKind.Map => $"Dict[str, {RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
+				ServiceTypeKind.Result => $"facility.Result[{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
+				ServiceTypeKind.Array => $"typing.List[{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
+				ServiceTypeKind.Map => $"typing.Dict[str, {RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
 				_ => throw new ArgumentException("Type kind out of range.", nameof(typeInfo)),
 			};
 
@@ -184,7 +184,7 @@ namespace Facility.CodeGen.Python
 				string value = SnakeCase(field.ServiceField.Name);
 				if (field.ServiceField.TypeName != "string")
 					value = $"str({value})";
-				text = text.Replace(key, "{quote(" + value + ")}");
+				text = text.Replace(key, "{uri_encode(" + value + ")}");
 				prefix = "f";
 			}
 			text = $"{prefix}\"{text}\"";
@@ -260,6 +260,7 @@ namespace Facility.CodeGen.Python
 			"bytes",
 			"class",
 			"continue",
+			"decimal",
 			"def",
 			"del",
 			"dict",
@@ -294,7 +295,9 @@ namespace Facility.CodeGen.Python
 			"str",
 			"try",
 			"tuple",
+			"typing",
 			"while",
+			"uri_encode",
 			"with",
 			"yield",
 		};

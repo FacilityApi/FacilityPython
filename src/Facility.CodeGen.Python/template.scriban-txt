@@ -89,7 +89,7 @@ class {{ name }}(facility.DTO):
 {{ end ~}}
 
     @staticmethod
-    def from_data(data: dict) -> "{{ name }}":
+    def from_data(data: typing.Dict[str, typing.Any]) -> "{{ name }}":
         return {{ name }}(
 {{ for field in fields ~}}
             {{ WriteDtoFromDataAssignment field ~}}
@@ -142,16 +142,17 @@ URL: [`{{ HttpService.Url }}`]({{ HttpService.Url }})
 {{ end ~}}
 """
 
+import decimal
+import enum
+import typing
+from urllib.parse import quote as uri_encode
+
 import facility
-from enum import Enum
-from decimal import Decimal
-from urllib.parse import quote
-from typing import Dict, List
 
 {{### Enums ### ~}}
 {{ for enum in Service.Enums | WhereNotObsolete ~}}
 
-class {{ enum.Name }}(Enum):
+class {{ enum.Name }}(enum.Enum):
 {{ WriteSummaryAndRemarks enum "    " ~}}
 {{ for pair in enum.Values | WhereNotObsolete | Enumerate ~}}
     {{ pair.Item2.Name | SnakeCase | ToUpper }} = {{ pair.Item1 + 1 }}  # {{ pair.Item2.Summary }}
@@ -168,8 +169,12 @@ class {{ enum.Name }}(Enum):
 
 {{### Client and Methods ### ~}}
 class Client(facility.ClientBase):
-    def __init__(self, base_uri={{ if HttpService ~}}"{{ HttpService.Url }}"{{ else ~}}None{{ end ~}}, headers=None, oauth=None):
-        super(Client, self).__init__(base_uri=base_uri, headers=headers, oauth=oauth)
+    def __init__(self,
+                 base_uri: str = "{{ if HttpService ~}}{{ HttpService.Url }}{{ end ~}}", *,
+                 headers: typing.Optional[typing.Dict[str, str]] = None,
+                 oauth: typing.Optional[facility.OAuthSettings] = None,
+                 max_retries: int = 0):
+        super().__init__(base_uri=base_uri, headers=headers, oauth=oauth, max_retries=max_retries)
 
 {{ for method in Service.Methods | WhereNotObsolete ~}}
 {{ http = method | GetHttp ~}}
