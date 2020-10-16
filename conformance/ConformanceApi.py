@@ -51,6 +51,11 @@ from urllib.parse import quote as uri_encode
 import facility
 
 
+HTTP_STATUS_CODE_TO_ERROR_CODE = {sc: ec for ec, sc in facility.ERROR_CODE_TO_HTTP_STATUS_CODE.items()}
+HTTP_STATUS_CODE_TO_ERROR_CODE[403] = "Forbidden"  # ApiErrors.NotAdmin: The user is not an administrator.
+HTTP_STATUS_CODE_TO_ERROR_CODE[500] = "InternalServerError"  # ApiErrors.TooHappy: I'm "too" 😄!
+
+
 class Answer(enum.Enum):
     """
     One of three answers.
@@ -870,7 +875,8 @@ class Client(facility.ClientBase):
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(value=GetApiInfoResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def get_widgets(
         self, *,
@@ -890,7 +896,8 @@ class Client(facility.ClientBase):
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(value=GetWidgetsResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def create_widget(
         self, *,
@@ -908,7 +915,8 @@ class Client(facility.ClientBase):
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 201:  # Created
             return facility.Result(value=CreateWidgetResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def get_widget(
         self, *,
@@ -932,7 +940,8 @@ class Client(facility.ClientBase):
             return facility.Result(value=GetWidgetResponse.from_data(response_.json()))
         if response_.status_code == 304:  # Not Modified
             return facility.Result(value=GetWidgetResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def delete_widget(
         self, *,
@@ -958,7 +967,8 @@ class Client(facility.ClientBase):
             return facility.Result(value=DeleteWidgetResponse.from_data(response_.json()))
         if response_.status_code == 409:  # Conflict
             return facility.Result(value=DeleteWidgetResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def get_widget_batch(
         self, *,
@@ -976,7 +986,8 @@ class Client(facility.ClientBase):
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(value=GetWidgetBatchResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def mirror_fields(
         self, *,
@@ -999,7 +1010,8 @@ class Client(facility.ClientBase):
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(value=MirrorFieldsResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def check_query(
         self, *,
@@ -1042,7 +1054,8 @@ class Client(facility.ClientBase):
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(value=CheckQueryResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def check_path(
         self, *,
@@ -1071,7 +1084,8 @@ class Client(facility.ClientBase):
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(value=CheckPathResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def mirror_headers(
         self, *,
@@ -1114,7 +1128,8 @@ class Client(facility.ClientBase):
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(value=MirrorHeadersResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def mixed(
         self, *,
@@ -1147,7 +1162,8 @@ class Client(facility.ClientBase):
             return facility.Result(value=MixedResponse.from_data(response_.json()))
         if response_.status_code == 204:  # No Content
             return facility.Result(value=MixedResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
     def required(
         self, *,
@@ -1198,7 +1214,8 @@ class Client(facility.ClientBase):
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(value=RequiredResponse.from_data(response_.json()))
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
 
 # DO NOT EDIT: generated by fsdgenpython

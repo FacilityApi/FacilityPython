@@ -149,6 +149,20 @@ from urllib.parse import quote as uri_encode
 
 import facility
 
+
+{{### Errors ### ~}}
+HTTP_STATUS_CODE_TO_ERROR_CODE = {sc: ec for ec, sc in facility.ERROR_CODE_TO_HTTP_STATUS_CODE.items()}
+{{ for errorSet in HttpService.ErrorSets ~}}
+{{ if !errorSet.ServiceErrorSet.IsObsolete ~}}
+{{ for error in errorSet.Errors ~}}
+{{ if !error.ServiceError.IsObsolete ~}}
+HTTP_STATUS_CODE_TO_ERROR_CODE[{{ error.StatusCode + 0 }}] = "{{ error.StatusCode }}"  # {{ errorSet.ServiceErrorSet.Name }}.{{ error.ServiceError.Name }}{{ if error.ServiceError.Summary ~}}: {{ error.ServiceError.Summary }}{{ end ~}}
+
+{{ end ~}}
+{{ end ~}}
+{{ end ~}}
+{{ end ~}}
+
 {{### Enums ### ~}}
 {{ for enum in Service.Enums | WhereNotObsolete ~}}
 
@@ -227,7 +241,8 @@ class Client(facility.ClientBase):
         if response_.status_code == {{ response.StatusCode + 0 }}:  # {{ response.StatusCode | StatusCodePhrase }}
             return facility.Result(value={{ method.Name | PascalCase }}Response.from_data(response_.json()))
 {{ end # for response ~}}
-        return facility.Result(error=facility.Error.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 {{ else # if http ~}}
         raise NotImplementedError()
 {{ end # if http ... else ~}}

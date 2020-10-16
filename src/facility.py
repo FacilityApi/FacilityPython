@@ -5,22 +5,25 @@ from requests.exceptions import ChunkedEncodingError, ContentDecodingError
 from typing import Any, Optional, Dict, Callable, Generic, TypeVar
 
 
-ERROR_CODE_TO_HTTP_STATUS_CODE = {'InvalidRequest': 400,
-                                  'InternalError': 500,
-                                  'InvalidResponse': 500,
-                                  'ServiceUnavailable': 503,
-                                  'Timeout': 500,
-                                  'NotAuthenticated': 401,
-                                  'NotAuthorized': 403,
-                                  'NotFound': 404,
-                                  'NotModified': 304,
-                                  'Conflict': 409,
-                                  'TooManyRequests': 429,
-                                  'RequestTooLarge': 413
-                                  }
+ERROR_CODE_TO_HTTP_STATUS_CODE = {
+    'InvalidRequest': 400,
+    'InternalError': 500,
+    'InvalidResponse': 500,
+    'ServiceUnavailable': 503,
+    'Timeout': 500,
+    'NotAuthenticated': 401,
+    'NotAuthorized': 403,
+    'NotFound': 404,
+    'NotModified': 304,
+    'Conflict': 409,
+    'TooManyRequests': 429,
+    'RequestTooLarge': 413,
+    'InternalServerError': 500,
+}
+HTTP_STATUS_CODE_TO_ERROR_CODE = {sc: ec for ec, sc in ERROR_CODE_TO_HTTP_STATUS_CODE.items()}
 
 
-def map_error_code_to_http_status_code(error_code):
+def map_error_code_to_http_status_code(error_code: str) -> int:
     """
     Map the Facility internal error code to the http equivalent status code
     500 if not found
@@ -30,21 +33,6 @@ def map_error_code_to_http_status_code(error_code):
     :rtype: int
     """
     return ERROR_CODE_TO_HTTP_STATUS_CODE.get(error_code, 500)
-
-
-def map_http_status_code_to_error_code(status_code):
-    """
-    Map the http status code to internal error code
-    InvalidResponse if not found
-    :param status_code: HTTP status code
-    :type status_code: int
-    :return: internal error code
-    :rtype: str
-    """
-    for key, value in ERROR_CODE_TO_HTTP_STATUS_CODE.items():
-        if value == status_code:
-            return key
-    return 'InvalidResponse'
 
 
 class DTO:
@@ -57,7 +45,7 @@ class DTO:
     def __repr__(self):
         return self.__dict__.__repr__()
 
-    def to_data(self):
+    def to_data(self) -> Dict[str, Any]:
         """
         Returns a serializable dictionary for the DTO.
         """
@@ -70,7 +58,7 @@ class DTO:
     _create_data_name_regex = re.compile(r'_([a-z])')
 
     @staticmethod
-    def _create_data_name(name):
+    def _create_data_name(name: str) -> str:
         return DTO._create_data_name_regex.sub(lambda x: x.group(1).upper(), name)
 
     @staticmethod
@@ -115,7 +103,7 @@ class Error(DTO):
         self.innerError = inner_error
 
     @staticmethod
-    def from_data(data):
+    def from_data(data: dict) -> "Error":
         return Error(
             code=data.get('code'),
             message=data.get('message'),
@@ -124,13 +112,13 @@ class Error(DTO):
         )
 
     @staticmethod
-    def from_response(response):
+    def from_response(response: requests.Response, error_code: str = "") -> "Error":
         assert isinstance(response, requests.Response)
         if response.headers.get('Content-Type') == 'application/json':
             response_json = response.json()
             if response_json.get('code'):
                 return Error.from_data(response_json)
-        error_code = map_http_status_code_to_error_code(response.status_code)
+        error_code = error_code or HTTP_STATUS_CODE_TO_ERROR_CODE.get(response.status_code, 'InvalidResponse')
         return Error(code='InternalError', message=f'unexpected HTTP status code {response.status_code} {error_code}')
 
 
