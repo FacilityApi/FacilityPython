@@ -182,9 +182,7 @@ namespace Facility.CodeGen.Python
 			{
 				string key = "{" + field.Name + "}";
 				string value = SnakeCase(field.ServiceField.Name);
-				if (field.ServiceField.TypeName != "string")
-					value = $"str({value})";
-				text = text.Replace(key, "{uri_encode(" + value + ")}");
+				text = text.Replace(key, "{facility.encode(" + value + ")}");
 				prefix = "f";
 			}
 			text = $"{prefix}\"{text}\"";
@@ -269,6 +267,7 @@ namespace Facility.CodeGen.Python
 			"enum",
 			"except",
 			"exec",
+			"facility",
 			"finally",
 			"float",
 			"for",
@@ -297,7 +296,6 @@ namespace Facility.CodeGen.Python
 			"tuple",
 			"typing",
 			"while",
-			"uri_encode",
 			"with",
 			"yield",
 		};

@@ -13,3 +13,5 @@ release/
 launchSettings.json
 nCrunchTemp*
 _ReSharper*
+*.pyc
+

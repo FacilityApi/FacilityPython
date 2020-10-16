@@ -3,6 +3,15 @@ import re
 import requests
 from requests.exceptions import ChunkedEncodingError, ContentDecodingError
 from typing import Any, Optional, Dict, Callable, Generic, TypeVar
+from urllib.parse import quote
+
+
+def encode(value) -> str:
+    if value is None:
+        return ""
+    if not isinstance(value, str):
+        value = f"{value}"
+    return quote(value)
 
 
 ERROR_CODE_TO_HTTP_STATUS_CODE = {
@@ -71,6 +80,22 @@ class DTO:
             return list(map(DTO._create_data_value, value))
         else:
             return value
+
+    @classmethod
+    def from_data(cls, data: Dict[str, Any]) -> "DTO":
+        raise NotImplementedError()
+
+
+class Response(DTO):
+    """
+    A non-error response.
+    """
+    @classmethod
+    def from_response(cls, response: requests.Response, body: str = "") -> "cls":
+        data = response.json() if response.content else dict()
+        if body:
+            data = {body: data}
+        return cls.from_data(data)
 
 
 class Error(DTO):

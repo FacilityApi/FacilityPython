@@ -46,7 +46,6 @@ The tester should report a test failure if:
 import decimal
 import enum
 import typing
-from urllib.parse import quote as uri_encode
 
 import facility
 
@@ -90,10 +89,10 @@ class Widget(facility.DTO):
             raise ValueError(f"Invalid name: {name}")
         self.name = name
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "Widget":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "Widget":
         return Widget(
-            id_=data.get("id_"),
+            id_=data.get("id"),
             name=data.get("name"),
         )
 
@@ -176,20 +175,20 @@ class Any(facility.DTO):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "Any":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "Any":
         return Any(
             string=data.get("string"),
-            boolean=data.get("boolean"),
+            boolean=("boolean" in data and data["boolean"] is not False),
             double=data.get("double"),
             int32=data.get("int32"),
             int64=data.get("int64"),
-            decimal_=data.get("decimal_"),
-            bytes_=data.get("bytes_"),
-            object_=data.get("object_"),
-            error=data.get("error"),
+            decimal_=data.get("decimal"),
+            bytes_=data.get("bytes"),
+            object_=data.get("object"),
+            error=facility.Error.from_data(data["error"]) if "error" in data else None,
             data=Any.from_data(data["data"]) if "data" in data else None,
-            enum_=data.get("enum_"),
+            enum_=data.get("enum"),
             array=AnyArray.from_data(data["array"]) if "array" in data else None,
             map_=AnyMap.from_data(data["map"]) if "map" in data else None,
             result=AnyResult.from_data(data["result"]) if "result" in data else None,
@@ -274,23 +273,23 @@ class AnyArray(facility.DTO):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "AnyArray":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "AnyArray":
         return AnyArray(
-            string=data.get("string"),
-            boolean=data.get("boolean"),
-            double=data.get("double"),
-            int32=data.get("int32"),
-            int64=data.get("int64"),
-            decimal_=data.get("decimal_"),
-            bytes_=data.get("bytes_"),
-            object_=data.get("object_"),
-            error=data.get("error"),
-            data=list(map(Any.from_data, data["data"])) if "data" in data else None,
-            enum_=data.get("enum_"),
-            array=data.get("array"),
-            map_=data.get("map_"),
-            result=data.get("result"),
+            string=[v1 for v1 in data["string"]] if "string" in data else None,
+            boolean=[v1 for v1 in data["boolean"]] if "boolean" in data else None,
+            double=[v1 for v1 in data["double"]] if "double" in data else None,
+            int32=[v1 for v1 in data["int32"]] if "int32" in data else None,
+            int64=[v1 for v1 in data["int64"]] if "int64" in data else None,
+            decimal_=[v1 for v1 in data["decimal"]] if "decimal" in data else None,
+            bytes_=[v1 for v1 in data["bytes"]] if "bytes" in data else None,
+            object_=[v1 for v1 in data["object"]] if "object" in data else None,
+            error=[facility.Error.from_data(v1) for v1 in data["error"]] if "error" in data else None,
+            data=[Any.from_data(v1) for v1 in data["data"]] if "data" in data else None,
+            enum_=[v1 for v1 in data["enum"]] if "enum" in data else None,
+            array=[[v2 for v2 in v1] for v1 in data["array"]] if "array" in data else None,
+            map_=[v1 for v1 in data["map"]] if "map" in data else None,
+            result=[facility.Result(value=v1) for v1 in data["result"]] if "result" in data else None,
         )
 
 
@@ -372,23 +371,23 @@ class AnyMap(facility.DTO):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "AnyMap":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "AnyMap":
         return AnyMap(
-            string=data.get("string"),
-            boolean=data.get("boolean"),
-            double=data.get("double"),
-            int32=data.get("int32"),
-            int64=data.get("int64"),
-            decimal_=data.get("decimal_"),
-            bytes_=data.get("bytes_"),
-            object_=data.get("object_"),
-            error=data.get("error"),
-            data=data.get("data"),
-            enum_=data.get("enum_"),
-            array=data.get("array"),
-            map_=data.get("map_"),
-            result=data.get("result"),
+            string=data["string"] if "string" in data else None,
+            boolean=data["boolean"] if "boolean" in data else None,
+            double=data["double"] if "double" in data else None,
+            int32=data["int32"] if "int32" in data else None,
+            int64=data["int64"] if "int64" in data else None,
+            decimal_=data["decimal"] if "decimal" in data else None,
+            bytes_=data["bytes"] if "bytes" in data else None,
+            object_=data["object"] if "object" in data else None,
+            error=data["error"] if "error" in data else None,
+            data=data["data"] if "data" in data else None,
+            enum_=data["enum"] if "enum" in data else None,
+            array=data["array"] if "array" in data else None,
+            map_=data["map"] if "map" in data else None,
+            result=data["result"] if "result" in data else None,
         )
 
 
@@ -470,23 +469,23 @@ class AnyResult(facility.DTO):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "AnyResult":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "AnyResult":
         return AnyResult(
-            string=data.get("string"),
-            boolean=data.get("boolean"),
-            double=data.get("double"),
-            int32=data.get("int32"),
-            int64=data.get("int64"),
-            decimal_=data.get("decimal_"),
-            bytes_=data.get("bytes_"),
-            object_=data.get("object_"),
-            error=data.get("error"),
-            data=data.get("data"),
-            enum_=data.get("enum_"),
-            array=data.get("array"),
-            map_=data.get("map_"),
-            result=data.get("result"),
+            string=facility.Result(value=data["string"]) if "string" in data else None,
+            boolean=facility.Result(value=data["boolean"]) if "boolean" in data else None,
+            double=facility.Result(value=data["double"]) if "double" in data else None,
+            int32=facility.Result(value=data["int32"]) if "int32" in data else None,
+            int64=facility.Result(value=data["int64"]) if "int64" in data else None,
+            decimal_=facility.Result(value=data["decimal"]) if "decimal" in data else None,
+            bytes_=facility.Result(value=data["bytes"]) if "bytes" in data else None,
+            object_=facility.Result(value=data["object"]) if "object" in data else None,
+            error=facility.Result(value=facility.Error.from_data(data["error"])) if "error" in data else None,
+            data=facility.Result(value=Any.from_data(data["data"])) if "data" in data else None,
+            enum_=facility.Result(value=data["enum"]) if "enum" in data else None,
+            array=facility.Result(value=[v2 for v2 in data["array"]]) if "array" in data else None,
+            map_=facility.Result(value=data["map"]) if "map" in data else None,
+            result=facility.Result(value=facility.Result(value=data["result"])) if "result" in data else None,
         )
 
 
@@ -503,14 +502,14 @@ class HasWidget(facility.DTO):
             raise ValueError(f"Invalid widget: {widget}")
         self.widget = widget
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "HasWidget":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "HasWidget":
         return HasWidget(
             widget=Widget.from_data(data["widget"]) if "widget" in data else None,
         )
 
 
-class GetApiInfoResponse(facility.DTO):
+class GetApiInfoResponse(facility.Response):
     """
     Gets API information.
 
@@ -533,15 +532,15 @@ class GetApiInfoResponse(facility.DTO):
             raise ValueError(f"Invalid version: {version}")
         self.version = version
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "GetApiInfoResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "GetApiInfoResponse":
         return GetApiInfoResponse(
             service=data.get("service"),
             version=data.get("version"),
         )
 
 
-class GetWidgetsResponse(facility.DTO):
+class GetWidgetsResponse(facility.Response):
     """
     Gets widgets.
     """
@@ -557,14 +556,14 @@ class GetWidgetsResponse(facility.DTO):
             raise ValueError(f"Invalid widgets: {widgets}")
         self.widgets = widgets
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "GetWidgetsResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "GetWidgetsResponse":
         return GetWidgetsResponse(
-            widgets=list(map(Widget.from_data, data["widgets"])) if "widgets" in data else None,
+            widgets=[Widget.from_data(v1) for v1 in data["widgets"]] if "widgets" in data else None,
         )
 
 
-class CreateWidgetResponse(facility.DTO):
+class CreateWidgetResponse(facility.Response):
     """
     Creates a new widget.
     """
@@ -590,16 +589,16 @@ class CreateWidgetResponse(facility.DTO):
             raise ValueError(f"Invalid e_tag: {e_tag}")
         self.e_tag = e_tag
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "CreateWidgetResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "CreateWidgetResponse":
         return CreateWidgetResponse(
             widget=Widget.from_data(data["widget"]) if "widget" in data else None,
             url=data.get("url"),
-            e_tag=data.get("e_tag"),
+            e_tag=data.get("eTag"),
         )
 
 
-class GetWidgetResponse(facility.DTO):
+class GetWidgetResponse(facility.Response):
     """
     Gets the specified widget.
     """
@@ -625,16 +624,16 @@ class GetWidgetResponse(facility.DTO):
             raise ValueError(f"Invalid not_modified: {not_modified}")
         self.not_modified = not_modified
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "GetWidgetResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "GetWidgetResponse":
         return GetWidgetResponse(
             widget=Widget.from_data(data["widget"]) if "widget" in data else None,
-            e_tag=data.get("e_tag"),
-            not_modified=data.get("not_modified"),
+            e_tag=data.get("eTag"),
+            not_modified=("notModified" in data and data["notModified"] is not False),
         )
 
 
-class DeleteWidgetResponse(facility.DTO):
+class DeleteWidgetResponse(facility.Response):
     """
     Deletes the specified widget.
     """
@@ -655,15 +654,15 @@ class DeleteWidgetResponse(facility.DTO):
             raise ValueError(f"Invalid conflict: {conflict}")
         self.conflict = conflict
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "DeleteWidgetResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "DeleteWidgetResponse":
         return DeleteWidgetResponse(
-            not_found=data.get("not_found"),
-            conflict=data.get("conflict"),
+            not_found=("notFound" in data and data["notFound"] is not False),
+            conflict=("conflict" in data and data["conflict"] is not False),
         )
 
 
-class GetWidgetBatchResponse(facility.DTO):
+class GetWidgetBatchResponse(facility.Response):
     """
     Gets the specified widgets.
     """
@@ -679,14 +678,14 @@ class GetWidgetBatchResponse(facility.DTO):
             raise ValueError(f"Invalid results: {results}")
         self.results = results
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "GetWidgetBatchResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "GetWidgetBatchResponse":
         return GetWidgetBatchResponse(
-            results=data.get("results"),
+            results=[facility.Result(value=Widget.from_data(v1)) for v1 in data["results"]] if "results" in data else None,
         )
 
 
-class MirrorFieldsResponse(facility.DTO):
+class MirrorFieldsResponse(facility.Response):
     def __init__(
         self,
         field: "Any",
@@ -704,15 +703,15 @@ class MirrorFieldsResponse(facility.DTO):
             raise ValueError(f"Invalid matrix: {matrix}")
         self.matrix = matrix
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "MirrorFieldsResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "MirrorFieldsResponse":
         return MirrorFieldsResponse(
             field=Any.from_data(data["field"]) if "field" in data else None,
-            matrix=data.get("matrix"),
+            matrix=[[[v3 for v3 in v2] for v2 in v1] for v1 in data["matrix"]] if "matrix" in data else None,
         )
 
 
-class CheckQueryResponse(facility.DTO):
+class CheckQueryResponse(facility.Response):
     def __init__(
         self,
     ):
@@ -720,13 +719,13 @@ class CheckQueryResponse(facility.DTO):
         """
         super().__init__()
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "CheckQueryResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "CheckQueryResponse":
         return CheckQueryResponse(
         )
 
 
-class CheckPathResponse(facility.DTO):
+class CheckPathResponse(facility.Response):
     def __init__(
         self,
     ):
@@ -734,13 +733,13 @@ class CheckPathResponse(facility.DTO):
         """
         super().__init__()
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "CheckPathResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "CheckPathResponse":
         return CheckPathResponse(
         )
 
 
-class MirrorHeadersResponse(facility.DTO):
+class MirrorHeadersResponse(facility.Response):
     def __init__(
         self,
         string: str,
@@ -783,20 +782,20 @@ class MirrorHeadersResponse(facility.DTO):
             raise ValueError(f"Invalid enum_: {enum_}")
         self.enum_ = enum_
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "MirrorHeadersResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "MirrorHeadersResponse":
         return MirrorHeadersResponse(
             string=data.get("string"),
-            boolean=data.get("boolean"),
+            boolean=("boolean" in data and data["boolean"] is not False),
             double=data.get("double"),
             int32=data.get("int32"),
             int64=data.get("int64"),
-            decimal_=data.get("decimal_"),
-            enum_=data.get("enum_"),
+            decimal_=data.get("decimal"),
+            enum_=data.get("enum"),
         )
 
 
-class MixedResponse(facility.DTO):
+class MixedResponse(facility.Response):
     def __init__(
         self,
         header: str,
@@ -824,17 +823,17 @@ class MixedResponse(facility.DTO):
             raise ValueError(f"Invalid empty: {empty}")
         self.empty = empty
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "MixedResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "MixedResponse":
         return MixedResponse(
             header=data.get("header"),
             normal=data.get("normal"),
             body=data.get("body"),
-            empty=data.get("empty"),
+            empty=("empty" in data and data["empty"] is not False),
         )
 
 
-class RequiredResponse(facility.DTO):
+class RequiredResponse(facility.Response):
     def __init__(
         self,
         normal: str,
@@ -847,8 +846,8 @@ class RequiredResponse(facility.DTO):
             raise ValueError(f"Invalid normal: {normal}")
         self.normal = normal
 
-    @staticmethod
-    def from_data(data: typing.Dict[str, typing.Any]) -> "RequiredResponse":
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "RequiredResponse":
         return RequiredResponse(
             normal=data.get("normal"),
         )
@@ -874,7 +873,7 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=GetApiInfoResponse.from_data(response_.json()))
+            return facility.Result(value=GetApiInfoResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -895,7 +894,7 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=GetWidgetsResponse.from_data(response_.json()))
+            return facility.Result(value=GetWidgetsResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -910,11 +909,11 @@ class Client(facility.ClientBase):
         """
         uri_ = "/widgets"
         query_ = dict()
-        request_ = widget
+        request_ = widget.to_data() if widget is not None else None
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 201:  # Created
-            return facility.Result(value=CreateWidgetResponse.from_data(response_.json()))
+            return facility.Result(value=CreateWidgetResponse.from_response(response_, body="widget"))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -929,17 +928,17 @@ class Client(facility.ClientBase):
         :param id_: The widget ID.
         :param if_not_etag: Don't get the widget if it has this ETag.
         """
-        uri_ = f"/widgets/{uri_encode(str(id_))}"
+        uri_ = f"/widgets/{facility.encode(id_)}"
         query_ = dict()
         request_ = None
         headers_ = dict()
         if if_not_etag is not None:
-            headers_["ifNotETag"] = if_not_etag
+            headers_["ifNotETag"] = str(if_not_etag)
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=GetWidgetResponse.from_data(response_.json()))
+            return facility.Result(value=GetWidgetResponse.from_response(response_, body="widget"))
         if response_.status_code == 304:  # Not Modified
-            return facility.Result(value=GetWidgetResponse.from_data(response_.json()))
+            return facility.Result(value=GetWidgetResponse.from_response(response_, body="not_modified"))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -954,19 +953,19 @@ class Client(facility.ClientBase):
         :param id_: The widget ID.
         :param if_etag: Don't delete the widget unless it has this ETag.
         """
-        uri_ = f"/widgets/{uri_encode(str(id_))}"
+        uri_ = f"/widgets/{facility.encode(id_)}"
         query_ = dict()
         request_ = None
         headers_ = dict()
         if if_etag is not None:
-            headers_["ifETag"] = if_etag
+            headers_["ifETag"] = str(if_etag)
         response_ = self.send_request("DELETE", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 204:  # No Content
-            return facility.Result(value=DeleteWidgetResponse.from_data(response_.json()))
+            return facility.Result(value=DeleteWidgetResponse.from_response(response_))
         if response_.status_code == 404:  # Not Found
-            return facility.Result(value=DeleteWidgetResponse.from_data(response_.json()))
+            return facility.Result(value=DeleteWidgetResponse.from_response(response_, body="not_found"))
         if response_.status_code == 409:  # Conflict
-            return facility.Result(value=DeleteWidgetResponse.from_data(response_.json()))
+            return facility.Result(value=DeleteWidgetResponse.from_response(response_, body="conflict"))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -981,11 +980,11 @@ class Client(facility.ClientBase):
         """
         uri_ = "/widgets/get"
         query_ = dict()
-        request_ = ids
+        request_ = [v1 for v1 in ids] if ids is not None else None
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=GetWidgetBatchResponse.from_data(response_.json()))
+            return facility.Result(value=GetWidgetBatchResponse.from_response(response_, body="results"))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1009,7 +1008,7 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=MirrorFieldsResponse.from_data(response_.json()))
+            return facility.Result(value=MirrorFieldsResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1053,7 +1052,7 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=CheckQueryResponse.from_data(response_.json()))
+            return facility.Result(value=CheckQueryResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1077,13 +1076,13 @@ class Client(facility.ClientBase):
         :param decimal_:
         :param enum_:
         """
-        uri_ = f"/mirror/{uri_encode(string)}/{uri_encode(str(boolean))}/{uri_encode(str(double))}/{uri_encode(str(int32))}/{uri_encode(str(int64))}/{uri_encode(str(decimal_))}/{uri_encode(str(enum_))}"
+        uri_ = f"/mirror/{facility.encode(string)}/{facility.encode(boolean)}/{facility.encode(double)}/{facility.encode(int32)}/{facility.encode(int64)}/{facility.encode(decimal_)}/{facility.encode(enum_)}"
         query_ = dict()
         request_ = None
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=CheckPathResponse.from_data(response_.json()))
+            return facility.Result(value=CheckPathResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1112,22 +1111,22 @@ class Client(facility.ClientBase):
         request_ = None
         headers_ = dict()
         if string is not None:
-            headers_["string"] = string
+            headers_["string"] = str(string)
         if boolean is not None:
-            headers_["boolean"] = boolean
+            headers_["boolean"] = str(boolean)
         if double is not None:
-            headers_["double"] = double
+            headers_["double"] = str(double)
         if int32 is not None:
-            headers_["int32"] = int32
+            headers_["int32"] = str(int32)
         if int64 is not None:
-            headers_["int64"] = int64
+            headers_["int64"] = str(int64)
         if decimal_ is not None:
-            headers_["decimal"] = decimal_
+            headers_["decimal"] = str(decimal_)
         if enum_ is not None:
-            headers_["enum"] = enum_
+            headers_["enum"] = str(enum_)
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=MirrorHeadersResponse.from_data(response_.json()))
+            return facility.Result(value=MirrorHeadersResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1145,7 +1144,7 @@ class Client(facility.ClientBase):
         :param header:
         :param normal:
         """
-        uri_ = f"/mixed/{uri_encode(path)}"
+        uri_ = f"/mixed/{facility.encode(path)}"
         query_ = dict()
         if query is not None:
             query_["query"] = query
@@ -1154,14 +1153,14 @@ class Client(facility.ClientBase):
             request_["normal"] = normal
         headers_ = dict()
         if header is not None:
-            headers_["header"] = header
+            headers_["header"] = str(header)
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=MixedResponse.from_data(response_.json()))
+            return facility.Result(value=MixedResponse.from_response(response_))
         if response_.status_code == 202:  # Accepted
-            return facility.Result(value=MixedResponse.from_data(response_.json()))
+            return facility.Result(value=MixedResponse.from_response(response_, body="body"))
         if response_.status_code == 204:  # No Content
-            return facility.Result(value=MixedResponse.from_data(response_.json()))
+            return facility.Result(value=MixedResponse.from_response(response_, body="empty"))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1190,12 +1189,16 @@ class Client(facility.ClientBase):
         :param has_widget:
         """
         uri_ = "/required"
-        query_ = dict()
-        if query is not None:
-            query_["query"] = query
-        request_ = dict()
-        if normal is not None:
-            request_["normal"] = normal
+        if query is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message="'query' is required."))
+        query_ = {
+            "query": query,
+        }
+        if normal is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message="'normal' is required."))
+        request_ = {
+            "normal": normal,
+        }
         if widget is not None:
             request_["widget"] = widget.to_data()
         if widgets is not None:
@@ -1213,7 +1216,7 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=RequiredResponse.from_data(response_.json()))
+            return facility.Result(value=RequiredResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
