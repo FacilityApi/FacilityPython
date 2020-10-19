@@ -1,9 +1,15 @@
 import base64
+import enum
+import decimal
 import re
 import requests
+import requests.adapters
 from requests.exceptions import ChunkedEncodingError, ContentDecodingError
 from typing import Any, Optional, Dict, Callable, Generic, TypeVar
 from urllib.parse import quote
+
+
+T = TypeVar("T")
 
 
 def encode(value) -> str:
@@ -64,38 +70,48 @@ class DTO:
             if v is not None
         )
 
-    _create_data_name_regex = re.compile(r'_([a-z])')
+    _camel_case_regex = re.compile(r'_([a-z])')
 
     @staticmethod
     def _create_data_name(name: str) -> str:
-        return DTO._create_data_name_regex.sub(lambda x: x.group(1).upper(), name)
+        return DTO._camel_case_regex.sub(lambda x: x.group(1).upper(), name).rstrip("_")
 
     @staticmethod
     def _create_data_value(value):
         if isinstance(value, DTO):
             return value.to_data()
-        elif isinstance(value, bytearray):
+        elif isinstance(value, (bytearray, bytes)):
             return str(base64.b64encode(value))
         elif isinstance(value, list):
-            return list(map(DTO._create_data_value, value))
-        else:
-            return value
+            return [DTO._create_data_value(x) for x in value]
+        elif isinstance(value, dict):
+            return {k: DTO._create_data_value(v) for k, v in value.items()}
+        elif isinstance(value, decimal.Decimal):
+            s = str(value)
+            return int(s) if re.fullmatch(r'\d+', s) else float(s)
+        elif isinstance(value, Enum):
+            return str(value)
+        return value
 
     @classmethod
-    def from_data(cls, data: Dict[str, Any]) -> "DTO":
+    def from_data(cls: T, data: Dict[str, Any]) -> T:
         raise NotImplementedError()
 
 
-class Response(DTO):
+class Response(Generic[T], DTO):
     """
     A non-error response.
     """
     @classmethod
-    def from_response(cls, response: requests.Response, body: str = "") -> "cls":
+    def from_response(cls: "Response[T]", response: requests.Response, body: str = "") -> "Response[T]":
         data = response.json() if response.content else dict()
         if body:
             data = {body: data}
         return cls.from_data(data)
+
+    @classmethod
+    def from_data(cls: "Response[T]", data: Dict[str, Any]) -> "Response[T]":
+        raise NotImplementedError()
 
 
 class Error(DTO):
@@ -117,7 +133,7 @@ class Error(DTO):
         @type inner_error: Error
         @param inner_error: The inner error.
         """
-        super(Error, self).__init__()
+        super().__init__()
         assert code is None or isinstance(code, str)
         assert message is None or isinstance(message, str)
         assert details is None or isinstance(details, object)
@@ -127,8 +143,8 @@ class Error(DTO):
         self.details = details
         self.innerError = inner_error
 
-    @staticmethod
-    def from_data(data: dict) -> "Error":
+    @classmethod
+    def from_data(cls: "Error", data: dict) -> "Error":
         return Error(
             code=data.get('code'),
             message=data.get('message'),
@@ -136,8 +152,8 @@ class Error(DTO):
             inner_error=Error.from_data(data['innerError']) if 'innerError' in data else None,
         )
 
-    @staticmethod
-    def from_response(response: requests.Response, error_code: str = "") -> "Error":
+    @classmethod
+    def from_response(cls: "Error", response: requests.Response, error_code: str = "") -> "Error":
         assert isinstance(response, requests.Response)
         if response.headers.get('Content-Type') == 'application/json':
             response_json = response.json()
@@ -145,9 +161,6 @@ class Error(DTO):
                 return Error.from_data(response_json)
         error_code = error_code or HTTP_STATUS_CODE_TO_ERROR_CODE.get(response.status_code, 'InvalidResponse')
         return Error(code='InternalError', message=f'unexpected HTTP status code {response.status_code} {error_code}')
-
-
-T = TypeVar("T")
 
 
 class Result(Generic[T], DTO):
@@ -161,14 +174,14 @@ class Result(Generic[T], DTO):
         @type error: Error
         @param error: The error.
         """
-        super(Result, self).__init__()
+        super().__init__()
         assert (value is None) ^ (error is None)
         assert error is None or isinstance(error, Error)
         self.value = value
         self.error = error
 
-    @staticmethod
-    def from_data(data: Dict[str, Any], create_value: Optional[Callable[[Any], T]] = None):
+    @classmethod
+    def from_data(cls: "Result[T]", data: Dict[str, Any], create_value: Optional[Callable[[Any], T]] = None) -> "Result[T]":
         return Result(
             value=(create_value(data['value']) if create_value else data['value']) if 'value' in data else None,
             error=Error.from_data(data['error']) if 'error' in data else None,
@@ -242,7 +255,7 @@ class ClientBase:
             headers=headers_
         )
         try:
-            resp.content  # Consume socket so it can be released
+            _ = resp.content  # Consume socket so it can be released
         except (ChunkedEncodingError, ContentDecodingError, RuntimeError):
             resp.raw.read(decode_content=False)
         return resp
@@ -257,3 +270,14 @@ class ClientBase:
 
     def __exit__(self, *args):
         self.close()
+
+
+class Enum(enum.Enum):
+    @classmethod
+    def get(cls, value: str, default: Optional["Enum"] = None) -> Optional["Enum"]:
+        if isinstance(value, str):
+            try:
+                return cls[value]
+            except KeyError:
+                pass
+        return default

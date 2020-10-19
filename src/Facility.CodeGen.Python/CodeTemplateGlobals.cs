@@ -25,10 +25,21 @@ namespace Facility.CodeGen.Python
 
 		public string CodeGenCommentText { get; }
 
-		public HttpElementInfo? GetHttp(ServiceElementInfo methodInfo) =>
+		public HttpElementInfo? GetHttp(ServiceMethodInfo methodInfo) =>
 			HttpService?.Methods.FirstOrDefault(x => x.ServiceMethod == methodInfo);
 
 		public ServiceTypeInfo? GetFieldType(ServiceFieldInfo field) => Service.GetFieldType(field);
+
+		public bool IsRequired(HttpFieldInfo field) => field is HttpBodyFieldInfo || field is HttpPathFieldInfo || field.ServiceField.IsRequired;
+
+		public IEnumerable<HttpFieldInfo> Fields(HttpMethodInfo methodInfo)
+		{
+			var foo = methodInfo.RequestHeaderFields.Cast<HttpFieldInfo>().Concat(methodInfo.PathFields.Cast<HttpFieldInfo>());
+			if (methodInfo.RequestBodyField != null)
+				foo = foo.Append(methodInfo.RequestBodyField);
+			foo = foo.Concat(methodInfo.QueryFields.Cast<HttpFieldInfo>()).Concat(methodInfo.RequestNormalFields.Cast<HttpFieldInfo>());
+			return foo;
+		}
 
 		public static string RenderFieldTypeClass(ServiceTypeInfo typeInfo) =>
 			typeInfo.Kind switch
@@ -133,16 +144,6 @@ namespace Facility.CodeGen.Python
 				{
 					throw new InvalidOperationException("WhereNotObsolete: Unsupported type " + item.GetType().Name);
 				}
-			}
-		}
-
-		public IEnumerable Enumerate(IEnumerable items)
-		{
-			int index = 0;
-			foreach (var item in items)
-			{
-				yield return Tuple.Create(index, item);
-				index += 1;
 			}
 		}
 

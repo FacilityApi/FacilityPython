@@ -43,8 +43,8 @@ The tester should report a test failure if:
   response or error.
 """
 
+import base64
 import decimal
-import enum
 import typing
 
 import facility
@@ -55,15 +55,15 @@ HTTP_STATUS_CODE_TO_ERROR_CODE[403] = "Forbidden"  # ApiErrors.NotAdmin: The use
 HTTP_STATUS_CODE_TO_ERROR_CODE[500] = "InternalServerError"  # ApiErrors.TooHappy: I'm "too" 😄!
 
 
-class Answer(enum.Enum):
+class Answer(facility.Enum):
     """
     One of three answers.
 
     Use `maybe` if you aren't sure.
     """
-    YES = 1  # Affirmative.
-    NO = 2  # Negative.
-    MAYBE = 3  # Unknown.
+    YES = "yes"  # Affirmative.
+    NO = "no"  # Negative.
+    MAYBE = "maybe"  # Unknown.
 
 
 class Widget(facility.DTO):
@@ -183,12 +183,12 @@ class Any(facility.DTO):
             double=data.get("double"),
             int32=data.get("int32"),
             int64=data.get("int64"),
-            decimal_=data.get("decimal"),
-            bytes_=data.get("bytes"),
+            decimal_=decimal.Decimal(data["decimal"]) if "decimal" in data else None,
+            bytes_=base64.b64decode(data["bytes"]) if "bytes" in data else None,
             object_=data.get("object"),
             error=facility.Error.from_data(data["error"]) if "error" in data else None,
             data=Any.from_data(data["data"]) if "data" in data else None,
-            enum_=data.get("enum"),
+            enum_=Answer.get(data["enum"]) if "enum" in data else None,
             array=AnyArray.from_data(data["array"]) if "array" in data else None,
             map_=AnyMap.from_data(data["map"]) if "map" in data else None,
             result=AnyResult.from_data(data["result"]) if "result" in data else None,
@@ -281,15 +281,15 @@ class AnyArray(facility.DTO):
             double=[v1 for v1 in data["double"]] if "double" in data else None,
             int32=[v1 for v1 in data["int32"]] if "int32" in data else None,
             int64=[v1 for v1 in data["int64"]] if "int64" in data else None,
-            decimal_=[v1 for v1 in data["decimal"]] if "decimal" in data else None,
-            bytes_=[v1 for v1 in data["bytes"]] if "bytes" in data else None,
+            decimal_=[decimal.Decimal(v1) for v1 in data["decimal"]] if "decimal" in data else None,
+            bytes_=[base64.b64decode(v1) for v1 in data["bytes"]] if "bytes" in data else None,
             object_=[v1 for v1 in data["object"]] if "object" in data else None,
             error=[facility.Error.from_data(v1) for v1 in data["error"]] if "error" in data else None,
             data=[Any.from_data(v1) for v1 in data["data"]] if "data" in data else None,
-            enum_=[v1 for v1 in data["enum"]] if "enum" in data else None,
+            enum_=[Answer.get(v1) for v1 in data["enum"]] if "enum" in data else None,
             array=[[v2 for v2 in v1] for v1 in data["array"]] if "array" in data else None,
             map_=[v1 for v1 in data["map"]] if "map" in data else None,
-            result=[facility.Result(value=v1) for v1 in data["result"]] if "result" in data else None,
+            result=[facility.Result.from_data(v1) for v1 in data["result"]] if "result" in data else None,
         )
 
 
@@ -472,20 +472,20 @@ class AnyResult(facility.DTO):
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "AnyResult":
         return AnyResult(
-            string=facility.Result(value=data["string"]) if "string" in data else None,
-            boolean=facility.Result(value=data["boolean"]) if "boolean" in data else None,
-            double=facility.Result(value=data["double"]) if "double" in data else None,
-            int32=facility.Result(value=data["int32"]) if "int32" in data else None,
-            int64=facility.Result(value=data["int64"]) if "int64" in data else None,
-            decimal_=facility.Result(value=data["decimal"]) if "decimal" in data else None,
-            bytes_=facility.Result(value=data["bytes"]) if "bytes" in data else None,
-            object_=facility.Result(value=data["object"]) if "object" in data else None,
-            error=facility.Result(value=facility.Error.from_data(data["error"])) if "error" in data else None,
-            data=facility.Result(value=Any.from_data(data["data"])) if "data" in data else None,
-            enum_=facility.Result(value=data["enum"]) if "enum" in data else None,
-            array=facility.Result(value=[v2 for v2 in data["array"]]) if "array" in data else None,
-            map_=facility.Result(value=data["map"]) if "map" in data else None,
-            result=facility.Result(value=facility.Result(value=data["result"])) if "result" in data else None,
+            string=facility.Result.from_data(data["string"]) if "string" in data else None,
+            boolean=facility.Result.from_data(data["boolean"]) if "boolean" in data else None,
+            double=facility.Result.from_data(data["double"]) if "double" in data else None,
+            int32=facility.Result.from_data(data["int32"]) if "int32" in data else None,
+            int64=facility.Result.from_data(data["int64"]) if "int64" in data else None,
+            decimal_=facility.Result.from_data(data["decimal"]) if "decimal" in data else None,
+            bytes_=facility.Result.from_data(data["bytes"]) if "bytes" in data else None,
+            object_=facility.Result.from_data(data["object"]) if "object" in data else None,
+            error=facility.Result.from_data(data["error"]) if "error" in data else None,
+            data=facility.Result.from_data(data["data"]) if "data" in data else None,
+            enum_=facility.Result.from_data(data["enum"]) if "enum" in data else None,
+            array=facility.Result.from_data(data["array"]) if "array" in data else None,
+            map_=facility.Result.from_data(data["map"]) if "map" in data else None,
+            result=facility.Result.from_data(data["result"]) if "result" in data else None,
         )
 
 
@@ -681,7 +681,7 @@ class GetWidgetBatchResponse(facility.Response):
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "GetWidgetBatchResponse":
         return GetWidgetBatchResponse(
-            results=[facility.Result(value=Widget.from_data(v1)) for v1 in data["results"]] if "results" in data else None,
+            results=[facility.Result.from_data(v1) for v1 in data["results"]] if "results" in data else None,
         )
 
 
@@ -790,8 +790,8 @@ class MirrorHeadersResponse(facility.Response):
             double=data.get("double"),
             int32=data.get("int32"),
             int64=data.get("int64"),
-            decimal_=data.get("decimal"),
-            enum_=data.get("enum"),
+            decimal_=decimal.Decimal(data["decimal"]) if "decimal" in data else None,
+            enum_=Answer.get(data["enum"]) if "enum" in data else None,
         )
 
 
@@ -900,16 +900,18 @@ class Client(facility.ClientBase):
 
     def create_widget(
         self, *,
-        widget: Widget = None,
+        widget: Widget,
     ) -> facility.Result[CreateWidgetResponse]:
         """
         Creates a new widget.
 
         :param widget: The widget to create.
         """
+        if widget is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'widget' is required."))
         uri_ = "/widgets"
         query_ = dict()
-        request_ = widget.to_data() if widget is not None else None
+        request_ = widget.to_data()
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 201:  # Created
@@ -928,6 +930,8 @@ class Client(facility.ClientBase):
         :param id_: The widget ID.
         :param if_not_etag: Don't get the widget if it has this ETag.
         """
+        if id_ is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'id' is required."))
         uri_ = f"/widgets/{facility.encode(id_)}"
         query_ = dict()
         request_ = None
@@ -944,7 +948,7 @@ class Client(facility.ClientBase):
 
     def delete_widget(
         self, *,
-        id_: int = None,
+        id_: int,
         if_etag: str = None,
     ) -> facility.Result[DeleteWidgetResponse]:
         """
@@ -953,6 +957,8 @@ class Client(facility.ClientBase):
         :param id_: The widget ID.
         :param if_etag: Don't delete the widget unless it has this ETag.
         """
+        if id_ is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'id' is required."))
         uri_ = f"/widgets/{facility.encode(id_)}"
         query_ = dict()
         request_ = None
@@ -978,9 +984,11 @@ class Client(facility.ClientBase):
 
         :param ids: The IDs of the widgets to return.
         """
+        if ids is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'ids' is required."))
         uri_ = "/widgets/get"
         query_ = dict()
-        request_ = [v1 for v1 in ids] if ids is not None else None
+        request_ = [v1 for v1 in ids]
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
@@ -1058,13 +1066,13 @@ class Client(facility.ClientBase):
 
     def check_path(
         self, *,
-        string: str = None,
-        boolean: bool = None,
-        double: float = None,
-        int32: int = None,
-        int64: int = None,
-        decimal_: decimal.Decimal = None,
-        enum_: Answer = None,
+        string: str,
+        boolean: bool,
+        double: float,
+        int32: int,
+        int64: int,
+        decimal_: decimal.Decimal,
+        enum_: Answer,
     ) -> facility.Result[CheckPathResponse]:
         """
 
@@ -1076,6 +1084,20 @@ class Client(facility.ClientBase):
         :param decimal_:
         :param enum_:
         """
+        if string is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'string' is required."))
+        if boolean is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'boolean' is required."))
+        if double is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'double' is required."))
+        if int32 is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'int32' is required."))
+        if int64 is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'int64' is required."))
+        if decimal_ is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'decimal' is required."))
+        if enum_ is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'enum' is required."))
         uri_ = f"/mirror/{facility.encode(string)}/{facility.encode(boolean)}/{facility.encode(double)}/{facility.encode(int32)}/{facility.encode(int64)}/{facility.encode(decimal_)}/{facility.encode(enum_)}"
         query_ = dict()
         request_ = None
@@ -1132,9 +1154,9 @@ class Client(facility.ClientBase):
 
     def mixed(
         self, *,
-        path: str = None,
-        query: str = None,
+        path: str,
         header: str = None,
+        query: str = None,
         normal: str = None,
     ) -> facility.Result[MixedResponse]:
         """
@@ -1144,6 +1166,8 @@ class Client(facility.ClientBase):
         :param header:
         :param normal:
         """
+        if path is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'path' is required."))
         uri_ = f"/mixed/{facility.encode(path)}"
         query_ = dict()
         if query is not None:
@@ -1188,6 +1212,10 @@ class Client(facility.ClientBase):
         :param widget_map:
         :param has_widget:
         """
+        if query is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'query' is required."))
+        if normal is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'normal' is required."))
         uri_ = "/required"
         if query is None:
             return facility.Result(error=facility.Error(code="InvalidRequest", message="'query' is required."))
@@ -1206,9 +1234,9 @@ class Client(facility.ClientBase):
         if widget_matrix is not None:
             request_["widgetMatrix"] = [[v2.to_data() for v2 in v1] for v1 in widget_matrix]
         if widget_result is not None:
-            request_["widgetResult"] = widget_result
+            request_["widgetResult"] = widget_result.to_data()
         if widget_results is not None:
-            request_["widgetResults"] = [v1 for v1 in widget_results]
+            request_["widgetResults"] = [v1.to_data() for v1 in widget_results]
         if widget_map is not None:
             request_["widgetMap"] = {k1: v1.to_data() for k1, v1 in widget_map.items()}
         if has_widget is not None:

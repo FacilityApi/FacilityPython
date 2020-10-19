@@ -1,9 +1,10 @@
-{{ func WriteFieldValue # $0 source depth ~}}{{ if $0.Kind == 9 }}{{ $0.Dto.Name }}.from_data({{ $1 }}){{ else if $0.Kind == 8 ~}}facility.Error.from_data({{ $1 }}){{ else if $0.Kind == 11 && $0.Dto  ~}}facility.Result(value={{ WriteFieldValue $0.Dto $1 $2+1 }}){{ else if $0.Kind == 11 && $0.ValueType ~}}facility.Result(value={{ WriteFieldValue $0.ValueType $1 $2+1 }}){{ else if $0.Kind == 12 && $0.Dto ~}}[{{ WriteFieldValue $0.Dto ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else if $0.Kind == 12 && $0.ValueType ~}}[{{ WriteFieldValue $0.ValueType ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else ~}}{{ $1 }}{{ end ~}}{{ end # func WriteFieldValue ~}}
+
+{{ func WriteFieldValue # $0 source depth ~}}{{ if $0.Kind == 9 }}{{ $0.Dto.Name }}.from_data({{ $1 }}){{ else if $0.Kind == 5 ~}}decimal.Decimal({{ $1 }}){{ else if $0.Kind == 6 ~}}base64.b64decode({{ $1 }}){{ else if $0.Kind == 8 ~}}facility.Error.from_data({{ $1 }}){{ else if $0.Kind == 10 && $0.Enum ~}}{{ $0.Enum.Name }}.get({{ $1 }}){{ else if $0.Kind == 11 ~}}facility.Result.from_data({{ $1 }}){{ else if $0.Kind == 12 && $0.Dto ~}}[{{ WriteFieldValue $0.Dto ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else if $0.Kind == 12 && $0.ValueType ~}}[{{ WriteFieldValue $0.ValueType ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else ~}}{{ $1 }}{{ end ~}}{{ end # func WriteFieldValue ~}}
 
 {{ func WriteDtoFromDataAssignment # field ~}}
 {{ type = $0 | GetFieldType ~}}
 {{ if type.Kind == 1 ~}}{{ $0.Name | SnakeCase }}=("{{ $0.Name }}" in data and data["{{ $0.Name }}"] is not False),
-{{ else if type.Kind < 8 || type.Kind == 10 ~}}{{ $0.Name | SnakeCase }}=data.get("{{ $0.Name }}"),
+{{ else if type.Kind < 5 || type.Kind == 7 ~}}{{ $0.Name | SnakeCase }}=data.get("{{ $0.Name }}"),
 {{ else ~}}{{ $0.Name | SnakeCase }}={{ WriteFieldValue type ("data[\"" + $0.Name + "\"]") 1 }} if "{{ $0.Name }}" in data else None,
 {{ end ~}}
 {{ end # func WriteDtoFromDataAssignment ~}}
@@ -32,7 +33,7 @@
 {{ end # func WriteCodeGenComment ~}}
 
 {{ func WriteNestedFieldTypeToData ~}}
-{{ if $0.Dto ~}}
+{{ if $0.Kind == 8 || $0.Kind == 9 || $0.Kind == 11 # Error|Dto|Result ~}}
 v{{ $1 }}.to_data(){{ else if $0.Kind == 12 && $0.ValueType # Array ~}}
 [{{ WriteNestedFieldTypeToData $0.ValueType $1 + 1 ~}}
  for v{{ $1 + 1 }} in v{{ $1 }}]{{ else if $0.Kind == 13 && $0.ValueType # Map ~}}
@@ -44,7 +45,7 @@ v{{ $1 }}{{ end ~}}
 {{ func WriteFieldToData # field [ifelse] ~}}
 {{ type = $0 | GetFieldType ~}}
 {{ if $1 ~}}{{ ifelse = " if " + ($0.Name | SnakeCase) + " is not None else None" ~}}{{ else ~}}{{ ifelse = "" ~}}{{ end ~}}
-{{ if type.Dto ~}}
+{{ if type.Kind == 8 || type.Kind == 9 || type.Kind == 11 # Error|Dto|Result ~}}
 {{ $0.Name | SnakeCase }}.to_data(){{ ifelse }}{{ else if type.Kind == 12 && type.ValueType # Array ~}}
 [{{ WriteNestedFieldTypeToData type.ValueType 1 }} for v1 in {{ $0.Name | SnakeCase }}]{{ ifelse }}{{ else if type.Kind == 13 && type.ValueType # Map ~}}
 {k1: {{ WriteNestedFieldTypeToData type.ValueType 1 }} for k1, v1 in {{ $0.Name | SnakeCase }}.items()}{{ ifelse }}{{ else ~}}
@@ -90,7 +91,7 @@ class {{ name }}(facility.{{ if $3 ~}}{{ $3 }}{{ else ~}}DTO{{ end ~}}):
 {{ if $0 && !$0.empty? ~}}
 {{ noreq = true ~}}
 {{ for field in $0 ~}}
-{{ if field.ServiceField.IsRequired ~}}
+{{ if field | IsRequired ~}}
 {{ noreq = false ~}}
         if {{ field.ServiceField.Name | SnakeCase }} is None:
             return facility.Result(error=facility.Error(code="InvalidRequest", message="'{{ field.ServiceField.Name | SnakeCase }}' is required."))
@@ -101,17 +102,17 @@ class {{ name }}(facility.{{ if $3 ~}}{{ $3 }}{{ else ~}}DTO{{ end ~}}):
 {{ else ~}}
         {{ $1 }} = {
 {{ for field in $0 ~}}
-{{ if field.ServiceField.IsRequired ~}}
+{{ if field | IsRequired ~}}
             "{{ field.ServiceField.Name }}": {{ if $3 ~}}{{ $3 }}({{ end ~}}{{ WriteFieldToData field.ServiceField }}{{ if $3 ~}}){{ end ~}},
 {{ end ~}}
 {{ end # field in $0 ~}}
         }
 {{ end # if noreq else ~}}
-{{ for field in $0 ~}}{{ if !field.ServiceField.IsRequired ~}}
+{{ for field in $0 ~}}{{ if !(field | IsRequired) ~}}
         if {{ field.ServiceField.Name | SnakeCase }} is not None:
             {{ $1 }}["{{ field.ServiceField.Name }}"] = {{ if $3 ~}}{{ $3 }}({{ end ~}}{{ WriteFieldToData field.ServiceField }}{{ if $3 ~}}){{ end ~}}
 
-{{ end # if !field.ServiceField.IsRequired ~}}
+{{ end # if !(field | IsRequired) ~}}
 {{ end # field in $0 ~}}
 {{ else # if $0 ~}}
         {{ $1 }} = {{ $2 }}
@@ -138,8 +139,8 @@ URL: [`{{ HttpService.Url }}`]({{ HttpService.Url }})
 {{ end ~}}
 """
 
+import base64
 import decimal
-import enum
 import typing
 
 import facility
@@ -161,10 +162,10 @@ HTTP_STATUS_CODE_TO_ERROR_CODE[{{ error.StatusCode + 0 }}] = "{{ error.StatusCod
 {{### Enums ### ~}}
 {{ for enum in Service.Enums | WhereNotObsolete ~}}
 
-class {{ enum.Name }}(enum.Enum):
+class {{ enum.Name }}(facility.Enum):
 {{ WriteSummaryAndRemarks enum "    " ~}}
-{{ for pair in enum.Values | WhereNotObsolete | Enumerate ~}}
-    {{ pair.Item2.Name | SnakeCase | ToUpper }} = {{ pair.Item1 + 1 }}  # {{ pair.Item2.Summary }}
+{{ for value in enum.Values | WhereNotObsolete ~}}
+    {{ value.Name | SnakeCase | ToUpper }} = "{{ value.Name }}"  # {{ value.Summary }}
 {{ end ~}}
 
 {{ end # for enum in Service.Enums ~}}
@@ -192,14 +193,14 @@ class Client(facility.ClientBase):
 {{ else }}
     def {{ method.Name | SnakeCase }}(
         self, *,
-{{ for field in method.RequestFields ~}}
-{{ if field.IsRequired ~}}
-        {{ field.Name | SnakeCase }}: {{ field | GetFieldType | RenderFieldTypeDeclaration }},
+{{ for field in http | Fields ~}}
+{{ if field | IsRequired ~}}
+        {{ field.ServiceField.Name | SnakeCase }}: {{ field.ServiceField | GetFieldType | RenderFieldTypeDeclaration }},
 {{ end ~}}
 {{ end ~}}
-{{ for field in method.RequestFields ~}}
-{{ if !field.IsRequired ~}}
-        {{ field.Name | SnakeCase }}: {{ field | GetFieldType | RenderFieldTypeDeclaration }} = None,
+{{ for field in http | Fields ~}}
+{{ if !(field | IsRequired) ~}}
+        {{ field.ServiceField.Name | SnakeCase }}: {{ field.ServiceField | GetFieldType | RenderFieldTypeDeclaration }} = None,
 {{ end ~}}
 {{ end ~}}
     ) -> facility.Result[{{ method.Name | PascalCase }}Response]:
@@ -222,11 +223,17 @@ class Client(facility.ClientBase):
 {{ end ~}}
         """
 {{ if http ~}}
+{{ for field in http | Fields ~}}
+{{ if field | IsRequired ~}}
+        if {{ field.ServiceField.Name | SnakeCase }} is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'{{ field.ServiceField.Name }}' is required."))
+{{ end # if IsRequired ~}}
+{{ end # for field ~}}
         uri_ = {{ RenderPathAsPythonFString http ~}}
 
 {{ WriteFieldsDict http.QueryFields "query_" "dict()" ~}}
 {{ if http.RequestBodyField ~}}
-        request_ = {{ WriteFieldToData http.RequestBodyField.ServiceField 1 ~}}
+        request_ = {{ WriteFieldToData http.RequestBodyField.ServiceField ~}}
 
 {{ else ~}}
 {{ WriteFieldsDict http.RequestNormalFields "request_" "None" ~}}

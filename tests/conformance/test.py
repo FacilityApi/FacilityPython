@@ -3,7 +3,7 @@ import inspect
 import json
 import logging
 import re
-from typing import Callable
+import typing
 
 import facility
 
@@ -12,9 +12,11 @@ from conformance import conformance_api as api
 
 class ConformanceTester:
 
-    def __init__(self, client: facility.ClientBase):
+    def __init__(self, client: facility.ClientBase, *, verbose: bool = True):
         self.client = client
         self.logger = logging.getLogger(self.__class__.__name__)
+        if verbose:
+            self.logger.setLevel(logging.DEBUG)
 
     def run(self, json_path: str) -> int:
         with open(json_path, "r", encoding="utf-8") as fp:
@@ -38,6 +40,35 @@ class ConformanceTester:
     def snake_case(self, name: str) -> str:
         return re.sub(r'([a-z])([A-Z])', r'\1_\2', name).lower()
 
+    def get_from_data(self, data: typing.Optional[dict], annotation):
+        if data is None:
+            return None
+        if inspect.isclass(annotation) and issubclass(annotation, facility.DTO):
+            return annotation.from_data(data)
+        if isinstance(annotation, typing._GenericAlias):
+            origin = getattr(annotation, "__origin__", None)
+            if inspect.isclass(origin) and issubclass(origin, facility.DTO):
+                return origin.from_data(data)
+            args = getattr(annotation, "__args__", [])
+            if origin is list:
+                if len(args) != 1:
+                    raise ValueError(f"Invalid generic data type: {annotation}")
+                if not isinstance(data, list):
+                    raise ValueError(f"Expected {annotation} not {data}")
+                sub_type = args[0]
+                return [self.get_from_data(x, sub_type) for x in data]
+            if origin is dict:
+                if len(args) != 2:
+                    raise ValueError(f"Invalid generic data type: {annotation}")
+                sub_type = args[1]
+                if not isinstance(data, dict):
+                    raise ValueError(f"Expected {annotation} not {data}")
+                return {k: self.get_from_data(v, sub_type) for k, v in data.items()}
+            raise ValueError(f"Data mismatches generic data type: {annotation} <= {data}")
+        if annotation in (bytes, bytearray):
+            return bytes(data)
+        return data
+
     def test(self, item: dict) -> bool:
         test_name = item['test']
         self.logger.info(f"testing {test_name}")
@@ -49,8 +80,12 @@ class ConformanceTester:
             self.logger.error(f"{test_name}: method not found: \"{method_name}\"")
             return False
         spec = inspect.getfullargspec(method)
-        kwargs = dict()
-        for key, value in item["request"].items():
+        kwargs = {
+            key: None
+            for key in spec.kwonlyargs or []
+            if key not in (spec.kwonlydefaults or [])
+        }
+        for key, actual in item["request"].items():
             keys = [key, self.snake_case(key)]
             keys.append(f"{keys[1]}_")
             key = None
@@ -62,26 +97,46 @@ class ConformanceTester:
                 self.logger.error(f"{test_name}: method \"{method_name}\" does not expect parameter: \"{key}\"")
                 return False
             annotation = spec.annotations[key]
-            if inspect.isclass(annotation) and issubclass(annotation, facility.DTO):
-                try:
-                    value = annotation.from_data(value)
-                except:
-                    self.logger.exception(f"{test_name}: method \"{method_name}\" parameter \"{key}\" invalid value: {value}")
-                    return False
-            kwargs[key] = value
-        for key in spec.kwonlyargs or []:
-            if key not in (spec.kwonlydefaults or []):
-                kwargs[key] = None
+            try:
+                kwargs[key] = self.get_from_data(actual, annotation)
+            except:
+                self.logger.exception(f"{test_name}: method \"{method_name}\" parameter \"{key}\" invalid value: {actual}")
+                return False
         try:
-            response = method(**kwargs)
+            result = method(**kwargs)
         except:
             self.logger.exception(f"{test_name}: method \"{method_name}\" call failed")
             return False
-        # TODO: check response
-        return True
+        if result.error and item.get("error") is None:
+            self.logger.warning(f"{test_name} got unexpected error: {result.error}")
+            return False
+        if item.get("error") is not None:
+            expected = facility.Result(error=facility.Error.from_data(item["error"]))
+        elif item.get("response") is not None:
+            if not result.value:
+                self.logger.warning(f"{test_name} missing expected response: {item['response']}")
+                return False
+            expected = facility.Result(value=result.value.__class__.from_data(item["response"]))
+        elif all(x is None for x in result.value.to_data().values()):
+            return True
+        else:
+            self.logger.warning(f"{test_name} invalid, no expectation indicated")
+            return False
+        if result.to_data() == expected.to_data():
+            return True
+        self.logger.warning(f"{test_name} had incorrect result")
+        self.compare_dtos(test_name, "result", expected, result)
+        return False
 
-    def map_method_field(self, method: Callable, field: str) -> str:
-        return field
+    def compare_dtos(self, test_name: str, prefix: str, expected: facility.DTO, actual: facility.DTO):
+        for key, expected_value in expected.__dict__.items():
+            actual_value = getattr(actual, key, None)
+            if expected_value == actual_value:
+                continue
+            if isinstance(expected_value, facility.DTO) and isinstance(actual_value, facility.DTO):
+                self.compare_dtos(test_name, f"{prefix}.{key}", expected_value, actual_value)
+            else:
+                self.logger.debug(f"{test_name} {prefix}.{key} expected: {repr(expected_value)} actual: {repr(actual_value)}")
 
 
 if __name__ == "__main__":
