@@ -242,7 +242,17 @@ class Client(facility.ClientBase):
         response_ = self.send_request("{{ http.Method }}", uri_, query=query_, request=request_, headers=headers_)
 {{ for response in http.ValidResponses ~}}
         if response_.status_code == {{ response.StatusCode + 0 }}:  # {{ response.StatusCode | StatusCodePhrase }}
-            return facility.Result(value={{ method.Name | PascalCase }}Response.from_response(response_{{ if response.BodyField ~}}, body="{{ response.BodyField.ServiceField.Name }}"{{ end ~}}{{ if !http.ResponseHeaderFields.empty? ~}}, header_map={{ "{" }}{{ for field in http.ResponseHeaderFields ~}}"{{ field.Name }}": "{{ field.ServiceField.Name }}",{{ end ~}}{{ "}" }}{{ end ~}}))
+            return facility.Result(
+                value={{ method.Name | PascalCase }}Response.from_response({{ if response.BodyField || (!http.ResponseHeaderFields.empty?) ~}}
+
+                    {{end ~}}response_{{ if response.BodyField ~}},
+                    body="{{ response.BodyField.ServiceField.Name }}"{{ if (response.BodyField.ServiceField | GetFieldType).Kind == 1 # Boolean ~}},
+                    default=True{{ end ~}}{{ end ~}}{{ if !http.ResponseHeaderFields.empty? ~}},
+                    header_map={{ "{" }}
+{{ for field in http.ResponseHeaderFields ~}}
+                        "{{ field.Name }}": "{{ field.ServiceField.Name }}",
+{{ end ~}}
+                    {{ "}" }}{{ end ~}}))
 {{ end # for response ~}}
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))

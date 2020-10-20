@@ -873,7 +873,8 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=GetApiInfoResponse.from_response(response_))
+            return facility.Result(
+                value=GetApiInfoResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -894,7 +895,8 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=GetWidgetsResponse.from_response(response_))
+            return facility.Result(
+                value=GetWidgetsResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -915,7 +917,14 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 201:  # Created
-            return facility.Result(value=CreateWidgetResponse.from_response(response_, body="widget", header_map={"Location": "url","eTag": "eTag",}))
+            return facility.Result(
+                value=CreateWidgetResponse.from_response(
+                    response_,
+                    body="widget",
+                    header_map={
+                        "Location": "url",
+                        "eTag": "eTag",
+                    }))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -940,9 +949,22 @@ class Client(facility.ClientBase):
             headers_["If-None-Match"] = str(if_not_etag)
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=GetWidgetResponse.from_response(response_, body="widget", header_map={"eTag": "eTag",}))
+            return facility.Result(
+                value=GetWidgetResponse.from_response(
+                    response_,
+                    body="widget",
+                    header_map={
+                        "eTag": "eTag",
+                    }))
         if response_.status_code == 304:  # Not Modified
-            return facility.Result(value=GetWidgetResponse.from_response(response_, body="notModified", header_map={"eTag": "eTag",}))
+            return facility.Result(
+                value=GetWidgetResponse.from_response(
+                    response_,
+                    body="notModified",
+                    default=True,
+                    header_map={
+                        "eTag": "eTag",
+                    }))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -967,11 +989,20 @@ class Client(facility.ClientBase):
             headers_["If-Match"] = str(if_etag)
         response_ = self.send_request("DELETE", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 204:  # No Content
-            return facility.Result(value=DeleteWidgetResponse.from_response(response_))
+            return facility.Result(
+                value=DeleteWidgetResponse.from_response(response_))
         if response_.status_code == 404:  # Not Found
-            return facility.Result(value=DeleteWidgetResponse.from_response(response_, body="notFound"))
+            return facility.Result(
+                value=DeleteWidgetResponse.from_response(
+                    response_,
+                    body="notFound",
+                    default=True))
         if response_.status_code == 409:  # Conflict
-            return facility.Result(value=DeleteWidgetResponse.from_response(response_, body="conflict"))
+            return facility.Result(
+                value=DeleteWidgetResponse.from_response(
+                    response_,
+                    body="conflict",
+                    default=True))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -992,7 +1023,10 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=GetWidgetBatchResponse.from_response(response_, body="results"))
+            return facility.Result(
+                value=GetWidgetBatchResponse.from_response(
+                    response_,
+                    body="results"))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1016,7 +1050,8 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=MirrorFieldsResponse.from_response(response_))
+            return facility.Result(
+                value=MirrorFieldsResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1060,7 +1095,8 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=CheckQueryResponse.from_response(response_))
+            return facility.Result(
+                value=CheckQueryResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1104,7 +1140,8 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=CheckPathResponse.from_response(response_))
+            return facility.Result(
+                value=CheckPathResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1148,7 +1185,18 @@ class Client(facility.ClientBase):
             headers_["enum"] = str(enum_)
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=MirrorHeadersResponse.from_response(response_, header_map={"string": "string","boolean": "boolean","double": "double","int32": "int32","int64": "int64","decimal": "decimal","enum": "enum",}))
+            return facility.Result(
+                value=MirrorHeadersResponse.from_response(
+                    response_,
+                    header_map={
+                        "string": "string",
+                        "boolean": "boolean",
+                        "double": "double",
+                        "int32": "int32",
+                        "int64": "int64",
+                        "decimal": "decimal",
+                        "enum": "enum",
+                    }))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1180,11 +1228,29 @@ class Client(facility.ClientBase):
             headers_["header"] = str(header)
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=MixedResponse.from_response(response_, header_map={"header": "header",}))
+            return facility.Result(
+                value=MixedResponse.from_response(
+                    response_,
+                    header_map={
+                        "header": "header",
+                    }))
         if response_.status_code == 202:  # Accepted
-            return facility.Result(value=MixedResponse.from_response(response_, body="body", header_map={"header": "header",}))
+            return facility.Result(
+                value=MixedResponse.from_response(
+                    response_,
+                    body="body",
+                    header_map={
+                        "header": "header",
+                    }))
         if response_.status_code == 204:  # No Content
-            return facility.Result(value=MixedResponse.from_response(response_, body="empty", header_map={"header": "header",}))
+            return facility.Result(
+                value=MixedResponse.from_response(
+                    response_,
+                    body="empty",
+                    default=True,
+                    header_map={
+                        "header": "header",
+                    }))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1244,7 +1310,8 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=RequiredResponse.from_response(response_))
+            return facility.Result(
+                value=RequiredResponse.from_response(response_))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 

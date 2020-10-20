@@ -108,10 +108,13 @@ class Response(Generic[T], DTO):
         response: requests.Response,
         body: str = "",
         header_map: Optional[Dict[str, str]] = None,
+        **kwargs,
     ) -> "Response[T]":
         data = response.json() if response.content else dict()
+        if not data and "default" in kwargs:
+            data = kwargs["default"]
         if body:
-            data = {body: data or True}
+            data = {body: data}
         if header_map and response.headers:
             for header_key, field_name in header_map.items():
                 if header_key in response.headers:
