@@ -90,7 +90,7 @@ class DTO:
             s = str(value)
             return int(s) if re.fullmatch(r'\d+', s) else float(s)
         elif isinstance(value, Enum):
-            return str(value)
+            return value.value
         return value
 
     @classmethod
