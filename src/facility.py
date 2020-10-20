@@ -81,7 +81,7 @@ class DTO:
         if isinstance(value, DTO):
             return value.to_data()
         elif isinstance(value, (bytearray, bytes)):
-            return str(base64.b64encode(value))
+            return base64.b64encode(value).decode("ascii")
         elif isinstance(value, list):
             return [DTO._create_data_value(x) for x in value]
         elif isinstance(value, dict):
