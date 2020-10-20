@@ -103,10 +103,19 @@ class Response(Generic[T], DTO):
     A non-error response.
     """
     @classmethod
-    def from_response(cls: "Response[T]", response: requests.Response, body: str = "") -> "Response[T]":
+    def from_response(
+        cls: "Response[T]",
+        response: requests.Response,
+        body: str = "",
+        header_map: Optional[Dict[str, str]] = None,
+    ) -> "Response[T]":
         data = response.json() if response.content else dict()
         if body:
             data = {body: data}
+        if header_map and response.headers:
+            for header_key, field_name in header_map.items():
+                if header_key in response.headers:
+                    data[field_name] = response.headers[header_key]
         return cls.from_data(data)
 
     @classmethod

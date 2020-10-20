@@ -915,7 +915,7 @@ class Client(facility.ClientBase):
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 201:  # Created
-            return facility.Result(value=CreateWidgetResponse.from_response(response_, body="widget"))
+            return facility.Result(value=CreateWidgetResponse.from_response(response_, body="widget", header_map={"Location": "url","eTag": "eTag",}))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -940,9 +940,9 @@ class Client(facility.ClientBase):
             headers_["ifNotETag"] = str(if_not_etag)
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=GetWidgetResponse.from_response(response_, body="widget"))
+            return facility.Result(value=GetWidgetResponse.from_response(response_, body="widget", header_map={"eTag": "eTag",}))
         if response_.status_code == 304:  # Not Modified
-            return facility.Result(value=GetWidgetResponse.from_response(response_, body="not_modified"))
+            return facility.Result(value=GetWidgetResponse.from_response(response_, body="not_modified", header_map={"eTag": "eTag",}))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1148,7 +1148,7 @@ class Client(facility.ClientBase):
             headers_["enum"] = str(enum_)
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=MirrorHeadersResponse.from_response(response_))
+            return facility.Result(value=MirrorHeadersResponse.from_response(response_, header_map={"string": "string","boolean": "boolean","double": "double","int32": "int32","int64": "int64","decimal": "decimal","enum": "enum",}))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -1180,11 +1180,11 @@ class Client(facility.ClientBase):
             headers_["header"] = str(header)
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
-            return facility.Result(value=MixedResponse.from_response(response_))
+            return facility.Result(value=MixedResponse.from_response(response_, header_map={"header": "header",}))
         if response_.status_code == 202:  # Accepted
-            return facility.Result(value=MixedResponse.from_response(response_, body="body"))
+            return facility.Result(value=MixedResponse.from_response(response_, body="body", header_map={"header": "header",}))
         if response_.status_code == 204:  # No Content
-            return facility.Result(value=MixedResponse.from_response(response_, body="empty"))
+            return facility.Result(value=MixedResponse.from_response(response_, body="empty", header_map={"header": "header",}))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
