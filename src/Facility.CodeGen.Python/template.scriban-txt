@@ -1,10 +1,10 @@
 
-{{ func WriteFieldValue # $0 source depth ~}}{{ if $0.Kind == 9 }}{{ $0.Dto.Name }}.from_data({{ $1 }}){{ else if $0.Kind == 5 ~}}decimal.Decimal({{ $1 }}){{ else if $0.Kind == 6 ~}}base64.b64decode({{ $1 }}){{ else if $0.Kind == 8 ~}}facility.Error.from_data({{ $1 }}){{ else if $0.Kind == 10 && $0.Enum ~}}{{ $0.Enum.Name }}.get({{ $1 }}){{ else if $0.Kind == 11 ~}}facility.Result.from_data({{ $1 }}){{ else if $0.Kind == 12 && $0.Dto ~}}[{{ WriteFieldValue $0.Dto ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else if $0.Kind == 12 && $0.ValueType ~}}[{{ WriteFieldValue $0.ValueType ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else ~}}{{ $1 }}{{ end ~}}{{ end # func WriteFieldValue ~}}
+{{ func WriteFieldValue # $0 source depth ~}}{{ if $0.Kind == 9 }}{{ $0.Dto.Name }}.from_data({{ $1 }}){{ else if $0.Kind == 2 ~}}float({{ $1 }}){{ else if $0.Kind == 3 || $0.Kind == 4 ~}}int({{ $1 }}){{ else if $0.Kind == 5 ~}}decimal.Decimal({{ $1 }}){{ else if $0.Kind == 6 ~}}base64.b64decode({{ $1 }}){{ else if $0.Kind == 8 ~}}facility.Error.from_data({{ $1 }}){{ else if $0.Kind == 10 && $0.Enum ~}}{{ $0.Enum.Name }}.get({{ $1 }}){{ else if $0.Kind == 11 ~}}facility.Result.from_data({{ $1 }}){{ else if $0.Kind == 12 && $0.Dto ~}}[{{ WriteFieldValue $0.Dto ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else if $0.Kind == 12 && $0.ValueType ~}}[{{ WriteFieldValue $0.ValueType ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else ~}}{{ $1 }}{{ end ~}}{{ end # func WriteFieldValue ~}}
 
 {{ func WriteDtoFromDataAssignment # field ~}}
 {{ type = $0 | GetFieldType ~}}
 {{ if type.Kind == 1 ~}}{{ $0.Name | SnakeCase }}=("{{ $0.Name }}" in data and data["{{ $0.Name }}"] is not False),
-{{ else if type.Kind < 5 || type.Kind == 7 ~}}{{ $0.Name | SnakeCase }}=data.get("{{ $0.Name }}"),
+{{ else if type.Kind == 0 || type.Kind == 7 ~}}{{ $0.Name | SnakeCase }}=data.get("{{ $0.Name }}"),
 {{ else ~}}{{ $0.Name | SnakeCase }}={{ WriteFieldValue type ("data[\"" + $0.Name + "\"]") 1 }} if "{{ $0.Name }}" in data else None,
 {{ end ~}}
 {{ end # func WriteDtoFromDataAssignment ~}}

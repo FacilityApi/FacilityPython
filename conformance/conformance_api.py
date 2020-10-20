@@ -92,7 +92,7 @@ class Widget(facility.DTO):
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "Widget":
         return Widget(
-            id_=data.get("id"),
+            id_=int(data["id"]) if "id" in data else None,
             name=data.get("name"),
         )
 
@@ -180,9 +180,9 @@ class Any(facility.DTO):
         return Any(
             string=data.get("string"),
             boolean=("boolean" in data and data["boolean"] is not False),
-            double=data.get("double"),
-            int32=data.get("int32"),
-            int64=data.get("int64"),
+            double=float(data["double"]) if "double" in data else None,
+            int32=int(data["int32"]) if "int32" in data else None,
+            int64=int(data["int64"]) if "int64" in data else None,
             decimal_=decimal.Decimal(data["decimal"]) if "decimal" in data else None,
             bytes_=base64.b64decode(data["bytes"]) if "bytes" in data else None,
             object_=data.get("object"),
@@ -278,16 +278,16 @@ class AnyArray(facility.DTO):
         return AnyArray(
             string=[v1 for v1 in data["string"]] if "string" in data else None,
             boolean=[v1 for v1 in data["boolean"]] if "boolean" in data else None,
-            double=[v1 for v1 in data["double"]] if "double" in data else None,
-            int32=[v1 for v1 in data["int32"]] if "int32" in data else None,
-            int64=[v1 for v1 in data["int64"]] if "int64" in data else None,
+            double=[float(v1) for v1 in data["double"]] if "double" in data else None,
+            int32=[int(v1) for v1 in data["int32"]] if "int32" in data else None,
+            int64=[int(v1) for v1 in data["int64"]] if "int64" in data else None,
             decimal_=[decimal.Decimal(v1) for v1 in data["decimal"]] if "decimal" in data else None,
             bytes_=[base64.b64decode(v1) for v1 in data["bytes"]] if "bytes" in data else None,
             object_=[v1 for v1 in data["object"]] if "object" in data else None,
             error=[facility.Error.from_data(v1) for v1 in data["error"]] if "error" in data else None,
             data=[Any.from_data(v1) for v1 in data["data"]] if "data" in data else None,
             enum_=[Answer.get(v1) for v1 in data["enum"]] if "enum" in data else None,
-            array=[[v2 for v2 in v1] for v1 in data["array"]] if "array" in data else None,
+            array=[[int(v2) for v2 in v1] for v1 in data["array"]] if "array" in data else None,
             map_=[v1 for v1 in data["map"]] if "map" in data else None,
             result=[facility.Result.from_data(v1) for v1 in data["result"]] if "result" in data else None,
         )
@@ -707,7 +707,7 @@ class MirrorFieldsResponse(facility.Response):
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "MirrorFieldsResponse":
         return MirrorFieldsResponse(
             field=Any.from_data(data["field"]) if "field" in data else None,
-            matrix=[[[v3 for v3 in v2] for v2 in v1] for v1 in data["matrix"]] if "matrix" in data else None,
+            matrix=[[[float(v3) for v3 in v2] for v2 in v1] for v1 in data["matrix"]] if "matrix" in data else None,
         )
 
 
@@ -787,9 +787,9 @@ class MirrorHeadersResponse(facility.Response):
         return MirrorHeadersResponse(
             string=data.get("string"),
             boolean=("boolean" in data and data["boolean"] is not False),
-            double=data.get("double"),
-            int32=data.get("int32"),
-            int64=data.get("int64"),
+            double=float(data["double"]) if "double" in data else None,
+            int32=int(data["int32"]) if "int32" in data else None,
+            int64=int(data["int64"]) if "int64" in data else None,
             decimal_=decimal.Decimal(data["decimal"]) if "decimal" in data else None,
             enum_=Answer.get(data["enum"]) if "enum" in data else None,
         )
