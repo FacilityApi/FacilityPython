@@ -87,7 +87,7 @@ class {{ name }}(facility.{{ if $3 ~}}{{ $3 }}{{ else ~}}DTO{{ end ~}}):
 
 {{ end # func WriteDtoDefinition ~}}
 
-{{ func WriteFieldsDict # fields dictname empty [wrap] ~}}
+{{ func WriteFieldsDict # fields dictname empty [wrap] [useFieldName] ~}}
 {{ if $0 && !$0.empty? ~}}
 {{ noreq = true ~}}
 {{ for field in $0 ~}}
@@ -103,14 +103,14 @@ class {{ name }}(facility.{{ if $3 ~}}{{ $3 }}{{ else ~}}DTO{{ end ~}}):
         {{ $1 }} = {
 {{ for field in $0 ~}}
 {{ if field | IsRequired ~}}
-            "{{ field.ServiceField.Name }}": {{ if $3 ~}}{{ $3 }}({{ end ~}}{{ WriteFieldToData field.ServiceField }}{{ if $3 ~}}){{ end ~}},
+            "{{ if $4 ~}}{{ field.Name }}{{ else ~}}{{ field.ServiceField.Name }}{{ end ~}}": {{ if $3 ~}}{{ $3 }}({{ end ~}}{{ WriteFieldToData field.ServiceField }}{{ if $3 ~}}){{ end ~}},
 {{ end ~}}
 {{ end # field in $0 ~}}
         }
 {{ end # if noreq else ~}}
 {{ for field in $0 ~}}{{ if !(field | IsRequired) ~}}
         if {{ field.ServiceField.Name | SnakeCase }} is not None:
-            {{ $1 }}["{{ field.ServiceField.Name }}"] = {{ if $3 ~}}{{ $3 }}({{ end ~}}{{ WriteFieldToData field.ServiceField }}{{ if $3 ~}}){{ end ~}}
+            {{ $1 }}["{{ if $4 ~}}{{ field.Name }}{{ else ~}}{{ field.ServiceField.Name }}{{ end ~}}"] = {{ if $3 ~}}{{ $3 }}({{ end ~}}{{ WriteFieldToData field.ServiceField }}{{ if $3 ~}}){{ end ~}}
 
 {{ end # if !(field | IsRequired) ~}}
 {{ end # field in $0 ~}}
@@ -238,11 +238,11 @@ class Client(facility.ClientBase):
 {{ else ~}}
 {{ WriteFieldsDict http.RequestNormalFields "request_" "None" ~}}
 {{ end # if http.RequestBodyField else ~}}
-{{ WriteFieldsDict http.RequestHeaderFields "headers_" "None" "str" ~}}
+{{ WriteFieldsDict http.RequestHeaderFields "headers_" "None" "str" 1 ~}}
         response_ = self.send_request("{{ http.Method }}", uri_, query=query_, request=request_, headers=headers_)
 {{ for response in http.ValidResponses ~}}
         if response_.status_code == {{ response.StatusCode + 0 }}:  # {{ response.StatusCode | StatusCodePhrase }}
-            return facility.Result(value={{ method.Name | PascalCase }}Response.from_response(response_{{ if response.BodyField ~}}, body="{{ response.BodyField.ServiceField.Name | SnakeCase }}"{{ end ~}}{{ if !http.ResponseHeaderFields.empty? ~}}, header_map={{ "{" }}{{ for field in http.ResponseHeaderFields ~}}"{{ field.Name }}": "{{ field.ServiceField.Name }}",{{ end ~}}{{ "}" }}{{ end ~}}))
+            return facility.Result(value={{ method.Name | PascalCase }}Response.from_response(response_{{ if response.BodyField ~}}, body="{{ response.BodyField.ServiceField.Name }}"{{ end ~}}{{ if !http.ResponseHeaderFields.empty? ~}}, header_map={{ "{" }}{{ for field in http.ResponseHeaderFields ~}}"{{ field.Name }}": "{{ field.ServiceField.Name }}",{{ end ~}}{{ "}" }}{{ end ~}}))
 {{ end # for response ~}}
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))

@@ -937,12 +937,12 @@ class Client(facility.ClientBase):
         request_ = None
         headers_ = dict()
         if if_not_etag is not None:
-            headers_["ifNotETag"] = str(if_not_etag)
+            headers_["If-None-Match"] = str(if_not_etag)
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(value=GetWidgetResponse.from_response(response_, body="widget", header_map={"eTag": "eTag",}))
         if response_.status_code == 304:  # Not Modified
-            return facility.Result(value=GetWidgetResponse.from_response(response_, body="not_modified", header_map={"eTag": "eTag",}))
+            return facility.Result(value=GetWidgetResponse.from_response(response_, body="notModified", header_map={"eTag": "eTag",}))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
@@ -964,12 +964,12 @@ class Client(facility.ClientBase):
         request_ = None
         headers_ = dict()
         if if_etag is not None:
-            headers_["ifETag"] = str(if_etag)
+            headers_["If-Match"] = str(if_etag)
         response_ = self.send_request("DELETE", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 204:  # No Content
             return facility.Result(value=DeleteWidgetResponse.from_response(response_))
         if response_.status_code == 404:  # Not Found
-            return facility.Result(value=DeleteWidgetResponse.from_response(response_, body="not_found"))
+            return facility.Result(value=DeleteWidgetResponse.from_response(response_, body="notFound"))
         if response_.status_code == 409:  # Conflict
             return facility.Result(value=DeleteWidgetResponse.from_response(response_, body="conflict"))
         return facility.Result(

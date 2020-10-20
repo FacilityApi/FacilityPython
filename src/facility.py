@@ -111,7 +111,7 @@ class Response(Generic[T], DTO):
     ) -> "Response[T]":
         data = response.json() if response.content else dict()
         if body:
-            data = {body: data}
+            data = {body: data or True}
         if header_map and response.headers:
             for header_key, field_name in header_map.items():
                 if header_key in response.headers:
