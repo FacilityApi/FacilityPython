@@ -282,11 +282,16 @@ class ClientBase:
 
 
 class Enum(enum.Enum):
+
     @classmethod
     def get(cls, value: str, default: Optional["Enum"] = None) -> Optional["Enum"]:
-        if isinstance(value, str):
-            try:
-                return cls[value]
-            except KeyError:
-                pass
-        return default
+        return cls.get_value_map().get(value, default)
+
+    @classmethod
+    def get_value_map(cls):
+        key = '_value_map'
+        v2e = getattr(cls, key, None)
+        if v2e is None:
+            v2e = {s.value: s for s in cls}
+            setattr(cls, key, v2e)
+        return v2e
