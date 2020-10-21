@@ -195,7 +195,7 @@ namespace Facility.CodeGen.Python
 			{ 505, "Http Version Not Supported" },
 		};
 
-		private static readonly string[] s_pythonReserved = new string[]
+		private static readonly HashSet<string> s_pythonReserved = new HashSet<string>
 		{
 			"and",
 			"as",
