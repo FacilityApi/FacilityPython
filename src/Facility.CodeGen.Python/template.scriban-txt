@@ -231,7 +231,7 @@ class Client(facility.ClientBase):
 {{ end # for field ~}}
         uri_ = {{ RenderPathAsPythonFString http ~}}
 
-{{ WriteFieldsDict http.QueryFields "query_" "dict()" ~}}
+{{ WriteFieldsDict http.QueryFields "query_" "dict()" null 1 ~}}
 {{ if http.RequestBodyField ~}}
         request_ = {{ WriteFieldToData http.RequestBodyField.ServiceField ~}}
 

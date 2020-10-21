@@ -890,7 +890,7 @@ class Client(facility.ClientBase):
         uri_ = "/widgets"
         query_ = dict()
         if query is not None:
-            query_["query"] = query
+            query_["q"] = query
         request_ = None
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
