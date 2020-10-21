@@ -1,6 +1,6 @@
 # PythonGeneratorSettings class
 
-Settings for generating Markdown and TypeScript.
+Settings for generating Python.
 
 ```csharp
 public sealed class PythonGeneratorSettings : FileGeneratorSettings
@@ -11,7 +11,6 @@ public sealed class PythonGeneratorSettings : FileGeneratorSettings
 | name | description |
 | --- | --- |
 | [PythonGeneratorSettings](PythonGeneratorSettings/PythonGeneratorSettings.md)() | The default constructor. |
-| [NoHttp](PythonGeneratorSettings/NoHttp.md) { get; set; } | True if the HTTP documentation should be omitted. |
 
 ## See Also
 

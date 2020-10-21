@@ -1,6 +1,6 @@
 # PythonGenerator.GeneratePython method
 
-Generates Markdown.
+Generates Python.
 
 ```csharp
 public static int GeneratePython(PythonGeneratorSettings settings)

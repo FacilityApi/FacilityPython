@@ -1,6 +1,6 @@
 # PythonGenerator class
 
-Generates Markdown.
+Generates Python.
 
 ```csharp
 public sealed class PythonGenerator : CodeGenerator
@@ -12,10 +12,9 @@ public sealed class PythonGenerator : CodeGenerator
 | --- | --- |
 | [PythonGenerator](PythonGenerator/PythonGenerator.md)() | The default constructor. |
 | override [HasPatternsToClean](PythonGenerator/HasPatternsToClean.md) { get; } | Patterns to clean are returned with the output. |
-| [NoHttp](PythonGenerator/NoHttp.md) { get; set; } | True if the HTTP documentation should be omitted. |
 | override [ApplySettings](PythonGenerator/ApplySettings.md)(…) | Applies generator-specific settings. |
-| override [GenerateOutput](PythonGenerator/GenerateOutput.md)(…) | Generates the Markdown. |
-| static [GeneratePython](PythonGenerator/GeneratePython.md)(…) | Generates Markdown. |
+| override [GenerateOutput](PythonGenerator/GenerateOutput.md)(…) | Generates the Python. |
+| static [GeneratePython](PythonGenerator/GeneratePython.md)(…) | Generates Python. |
 
 ## See Also
 

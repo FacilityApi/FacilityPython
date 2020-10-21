@@ -1,6 +1,6 @@
 # PythonGenerator.GenerateOutput method
 
-Generates the Markdown.
+Generates the Python.
 
 ```csharp
 public override CodeGenOutput GenerateOutput(ServiceInfo serviceInfo)
