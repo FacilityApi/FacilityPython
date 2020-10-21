@@ -73,7 +73,6 @@ namespace Facility.CodeGen.Python
 			var codeGenComment = CodeGenUtility.GetCodeGenComment(GeneratorName ?? "");
 			var patternsToClean = new[]
 			{
-				new CodeGenPattern("*.md", codeGenComment),
 				new CodeGenPattern("*.py", codeGenComment),
 			};
 			return new CodeGenOutput(outputFiles, patternsToClean);
