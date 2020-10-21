@@ -1,206 +1,284 @@
-{{ func WriteSummary ~}}
+
+{{ func WriteFieldValue # $0 source depth ~}}
+{{ kind = $0.Kind | KindName ~}}
+{{ if kind == "Dto" }}{{ $0.Dto.Name }}.from_data({{ $1 }}){{ else if kind == "Double" ~}}
+float({{ $1 }}){{ else if kind == "Int32" || kind == "Int64" ~}}
+int({{ $1 }}){{ else if kind == "Decimal" ~}}
+decimal.Decimal({{ $1 }}){{ else if kind == "Bytes" ~}}
+base64.b64decode({{ $1 }}){{ else if kind == "Error" ~}}
+facility.Error.from_data({{ $1 }}){{ else if kind == "Enum" && $0.Enum ~}}
+{{ $0.Enum.Name }}.get({{ $1 }}){{ else if kind == "Result" ~}}
+facility.Result.from_data({{ $1 }}){{ else if kind == "Array" && $0.Dto ~}}
+[{{ WriteFieldValue $0.Dto ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else if kind == "Array" && $0.ValueType ~}}
+[{{ WriteFieldValue $0.ValueType ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else ~}}
+{{ $1 }}{{ end ~}}
+{{ end # func WriteFieldValue ~}}
+
+{{ func WriteDtoFromDataAssignment # field ~}}
+{{ type = $0 | GetFieldType ~}}
+{{ kind = type.Kind | KindName ~}}
+{{ if kind == "Boolean" ~}}{{ $0.Name | SnakeCase }}=facility.string_to_bool(data.get("{{ $0.Name }}")),
+{{ else if kind == "String" || type.Kind == 7 ~}}{{ $0.Name | SnakeCase }}=data.get("{{ $0.Name }}"),
+{{ else ~}}{{ $0.Name | SnakeCase }}={{ WriteFieldValue type ("data[\"" + $0.Name + "\"]") 1 }} if "{{ $0.Name }}" in data else None,
+{{ end ~}}
+{{ end # func WriteDtoFromDataAssignment ~}}
+
+{{ func WriteSummaryAndRemarks ~}}
+{{ if !$0.Summary.empty? || ($0.Remarks && !$0.Remarks.empty?) ~}}
+{{ $1 }}"""
 {{ if !$0.Summary.empty? ~}}
-
-{{ $0.Summary }}
+{{ $1 }}{{ $0.Summary }}
 {{ end ~}}
-{{ end # func WriteSummary ~}}
+{{ if !$0.Summary.empty? && ($0.Remarks && !$0.Remarks.empty?) ~}}
 
-{{ func WriteRemarks ~}}
+{{ end ~}}
 {{ if $0.Remarks && !$0.Remarks.empty? ~}}
-
 {{ for line in $0.Remarks ~}}
-{{ line | regex.replace `\[([^\]]+)\]\(\)` `[$1]($1.md)` }}
+{{ $1 }}{{ line | regex.replace `\[([^\]]+)\]\(\)` `$1` }}
 {{ end ~}}
 {{ end ~}}
-{{ end # func WriteRemarks ~}}
+{{ $1 }}"""
+{{ end ~}}
+{{ end # func WriteSummaryAndRemarks ~}}
 
 {{ func WriteCodeGenComment ~}}
 
 <!-- {{ CodeGenCommentText }} -->
 {{ end # func WriteCodeGenComment ~}}
 
-{{### Service ### ~}}
-==> {{ Service.Name }}.md
+{{ func WriteNestedFieldTypeToData ~}}
+{{ kind = $0.Kind | KindName ~}}
+{{ if kind == "Error" || kind == "Dto" || kind == "Result" ~}}
+v{{ $1 }}.to_data(){{ else if kind == "Array" && $0.ValueType ~}}
+[{{ WriteNestedFieldTypeToData $0.ValueType $1 + 1 ~}}
+ for v{{ $1 + 1 }} in v{{ $1 }}]{{ else if kind == "Map" && $0.ValueType ~}}
+{k{{ $1 + 1 }}: {{ WriteNestedFieldTypeToData $0.ValueType $1 + 1 ~}}
+ for k{{ $1 + 1 }}, v{{ $1 + 1 }} in v{{ $1 }}.items()}{{ else ~}}
+v{{ $1 }}{{ end ~}}
+{{ end # func WriteNestedFieldTypeToData ~}}
 
-# {{ Service.Name }}
-{{ WriteSummary Service ~}}
+{{ func WriteFieldToData # field [ifelse] ~}}
+{{ type = $0 | GetFieldType ~}}
+{{ kind = type.Kind | KindName ~}}
+{{ if $1 ~}}{{ ifelse = " if " + ($0.Name | SnakeCase) + " is not None else None" ~}}{{ else ~}}{{ ifelse = "" ~}}{{ end ~}}
+{{ if kind == "Error" || kind == "Dto" || kind == "Result" ~}}
+{{ $0.Name | SnakeCase }}.to_data(){{ ifelse }}{{ else if kind == "Array" && type.ValueType ~}}
+[{{ WriteNestedFieldTypeToData type.ValueType 1 }} for v1 in {{ $0.Name | SnakeCase }}]{{ ifelse }}{{ else if kind == "Map" && type.ValueType ~}}
+{k1: {{ WriteNestedFieldTypeToData type.ValueType 1 }} for k1, v1 in {{ $0.Name | SnakeCase }}.items()}{{ ifelse }}{{ else ~}}
+{{ $0.Name | SnakeCase }}{{ end ~}}
+{{ end # func WriteFieldToData ~}}
+
+{{ func WriteDtoDefinition # dto name fields parentclass ~}}
+
+
+{{ name = $1 }}
+{{ fields = $2 | WhereNotObsolete ~}}
+class {{ name }}(facility.{{ if $3 ~}}{{ $3 }}{{ else ~}}DTO{{ end ~}}):
+{{ WriteSummaryAndRemarks $0 "    " ~}}
+    def __init__(
+        self,
+{{ for field in fields ~}}
+{{ if (field | GetFieldType).Dto ~}}{{ fquote = '"' ~}}{{ else }}{{ fquote = '' ~}}{{ end ~}}
+        {{ field.Name | SnakeCase }}: {{ fquote }}{{ field | GetFieldType | RenderFieldTypeDeclaration }}{{ fquote }},
+{{ end ~}}
+    ):
+        """
+{{ for field in fields ~}}
+        :param {{ field.Name | SnakeCase }}: {{ field.Summary }}
+{{ end ~}}
+        """
+        super().__init__()
+{{ for field in fields ~}}
+        if not isinstance({{ field.Name | SnakeCase }}, ({{ field | GetFieldType | RenderFieldTypeClass }}, type(None))):
+            raise ValueError(f"Invalid {{ field.Name | SnakeCase }}: {{ "{" }}{{ field.Name | SnakeCase }}{{ "}" }}")
+        self.{{ field.Name | SnakeCase }} = {{ field.Name | SnakeCase }}
+{{ end ~}}
+
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "{{ name }}":
+        return {{ name }}(
+{{ for field in fields ~}}
+            {{ WriteDtoFromDataAssignment field ~}}
+{{ end ~}}
+        )
+
+{{ end # func WriteDtoDefinition ~}}
+
+{{ func WriteFieldsDict # fields dictname empty [wrap] [useFieldName] ~}}
+{{ if $0 && !$0.empty? ~}}
+{{ noreq = true ~}}
+{{ for field in $0 ~}}
+{{ if field | IsRequired ~}}
+{{ noreq = false ~}}
+        if {{ field.ServiceField.Name | SnakeCase }} is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message="'{{ field.ServiceField.Name | SnakeCase }}' is required."))
+{{ end ~}}
+{{ end # field in $0 ~}}
+{{ if noreq ~}}
+        {{ $1 }} = dict()
+{{ else ~}}
+        {{ $1 }} = {
+{{ for field in $0 ~}}
+{{ if field | IsRequired ~}}
+            "{{ if $4 ~}}{{ field.Name }}{{ else ~}}{{ field.ServiceField.Name }}{{ end ~}}": {{ if $3 ~}}{{ $3 }}({{ end ~}}{{ WriteFieldToData field.ServiceField }}{{ if $3 ~}}){{ end ~}},
+{{ end ~}}
+{{ end # field in $0 ~}}
+        }
+{{ end # if noreq else ~}}
+{{ for field in $0 ~}}{{ if !(field | IsRequired) ~}}
+        if {{ field.ServiceField.Name | SnakeCase }} is not None:
+            {{ $1 }}["{{ if $4 ~}}{{ field.Name }}{{ else ~}}{{ field.ServiceField.Name }}{{ end ~}}"] = {{ if $3 ~}}{{ $3 }}({{ end ~}}{{ WriteFieldToData field.ServiceField }}{{ if $3 ~}}){{ end ~}}
+
+{{ end # if !(field | IsRequired) ~}}
+{{ end # field in $0 ~}}
+{{ else # if $0 ~}}
+        {{ $1 }} = {{ $2 }}
+{{ end # if $0 else ~}}
+{{ end # WriteFieldsDict ~}}
+
+{{### Client ### ~}}
+==> {{ Service.Name | SnakeCase }}.py
+"""
+{{ CodeGenCommentText }}
+
+{{ Service.Name }}
 {{ if HttpService && HttpService.Url ~}}
 
 URL: [`{{ HttpService.Url }}`]({{ HttpService.Url }})
 {{ end # if HttpService && HttpService.Url ~}}
-{{ if !Service.Methods.empty? ~}}
-{{ if HttpService ~}}
 
-| method | path | description |
-| --- | --- | --- |
-{{ for method in HttpService.Methods | WhereNotObsolete ~}}
-| [{{ method.ServiceMethod.Name }}]({{ Service.Name }}/{{ method.ServiceMethod.Name }}.md) | `{{ method.Method }} {{ method.Path }}` | {{ method.ServiceMethod.Summary }} |
+{{ Service.Summary }}
+{{ if Service.Remarks && !Service.Remarks.empty? ~}}
+
+{{ for line in Service.Remarks ~}}
+{{ line | regex.replace `\[([^\]]+)\]\(\)` `$1` }}
 {{ end ~}}
-{{ else # if HttpService ~}}
-
-| method | description |
-| --- | --- |
-{{ for method in Service.Methods | WhereNotObsolete ~}}
-| [{{ method.Name }}]({{ Service.Name }}/{{ method.Name }}.md) | {{ method.Summary }} |
 {{ end ~}}
-{{ end # else ~}}
-{{ end # if !Service.Methods.empty? ~}}
-{{ if !Service.Dtos.empty? ~}}
+"""
 
-| data | description |
-| --- | --- |
-{{ for dto in Service.Dtos | WhereNotObsolete ~}}
-| [{{ dto.Name }}]({{ Service.Name }}/{{ dto.Name }}.md) | {{ dto.Summary }} |
+import base64
+import decimal
+import typing
+
+import facility
+
+
+{{### Errors ### ~}}
+HTTP_STATUS_CODE_TO_ERROR_CODE = {sc: ec for ec, sc in facility.ERROR_CODE_TO_HTTP_STATUS_CODE.items()}
+{{ for errorSet in HttpService.ErrorSets ~}}
+{{ if !errorSet.ServiceErrorSet.IsObsolete ~}}
+{{ for error in errorSet.Errors ~}}
+{{ if !error.ServiceError.IsObsolete ~}}
+HTTP_STATUS_CODE_TO_ERROR_CODE[{{ error.StatusCode + 0 }}] = "{{ error.StatusCode }}"  # {{ errorSet.ServiceErrorSet.Name }}.{{ error.ServiceError.Name }}{{ if error.ServiceError.Summary ~}}: {{ error.ServiceError.Summary }}{{ end ~}}
+
 {{ end ~}}
-{{ end # if !Service.Dtos.empty? ~}}
-{{ if !Service.Enums.empty? ~}}
-
-| enum | description |
-| --- | --- |
-{{ for enum in Service.Enums | WhereNotObsolete ~}}
-| [{{ enum.Name }}]({{ Service.Name }}/{{ enum.Name }}.md) | {{ enum.Summary }} |
 {{ end ~}}
-{{ end # if !Service.Enums.empty? ~}}
-{{ if !Service.ErrorSets.empty? ~}}
-
-| errors | description |
-| --- | --- |
-{{ for errorSet in Service.ErrorSets | WhereNotObsolete ~}}
-| [{{ errorSet.Name }}]({{ Service.Name }}/{{ errorSet.Name }}.md) | {{ errorSet.Summary }} |
 {{ end ~}}
-{{ end # if !Service.ErrorSets.empty? ~}}
-{{ WriteRemarks Service ~}}
-{{ WriteCodeGenComment ~}}
-
-{{### Methods ### ~}}
-{{ for method in Service.Methods | WhereNotObsolete ~}}
-
-==> {{ Service.Name }}/{{ method.Name }}.md
-
-# {{ method.Name }}
-{{ WriteSummary method ~}}
-{{ http = method | GetHttp ~}}
-{{ if http ~}}
-
-```
-{{ http.Method }} {{ http.Path }}
-{{ for field in http.QueryFields | WhereNotObsolete ~}}
-  {{ if for.first; '?'; else; '&'; end }}{{ field.Name }}={{ '{' + field.ServiceField.Name + '}' }}
 {{ end ~}}
-{{ for field in http.RequestHeaderFields | WhereNotObsolete ~}}
-{{ field.Name }}: ({{ field.ServiceField.Name }})
-{{ end ~}}
-{{ if http.RequestBodyField ~}}
-({{ http.RequestBodyField.ServiceField.Name }})
-{{ else if !http.RequestNormalFields.empty? ~}}
-{
-{{ for field in http.RequestNormalFields | WhereNotObsolete ~}}
-  "{{ field.ServiceField.Name }}": {{ field.ServiceField | GetFieldType | RenderFieldTypeAsJsonValue }}{{ if !for.last; ','; end }}
-{{ end ~}}
-}
-{{ end # if else if ~}}
-{{ if !http.ResponseHeaderFields.empty? ~}}
---- response
-{{ for field in http.ResponseHeaderFields | WhereNotObsolete ~}}
-{{ field.Name }}: ({{ field.ServiceField.Name }})
-{{ end ~}}
-{{ end # if !http.ResponseHeaderFields.empty? ~}}
-{{ for response in http.ValidResponses ~}}
---- {{ response.StatusCode + 0 }} {{ response.StatusCode | StatusCodePhrase }}
-{{ if response.BodyField ~}}
-({{ if (response.BodyField.ServiceField | GetFieldType).Kind == 'Boolean'; 'if '; end }}{{ response.BodyField.ServiceField.Name }})
-{{ else if !response.NormalFields.empty? ~}}
-{
-{{ for field in response.NormalFields | WhereNotObsolete ~}}
-  "{{ field.ServiceField.Name }}": {{ field.ServiceField | GetFieldType | RenderFieldTypeAsJsonValue }}{{ if !for.last; ','; end }}
-{{ end ~}}
-}
-{{ end # if else if ~}}
-{{ end # for response in http.ValidResponses ~}}
-```
-{{ end # if http ~}}
-{{ requestFields = method.RequestFields | WhereNotObsolete ~}}
-{{ if !requestFields.empty? ~}}
-
-| request | type | description |
-| --- | --- | --- |
-{{ for field in requestFields ~}}
-| {{ field.Name }} | {{ field | GetFieldType | RenderFieldType }} | {{ field.Summary }} |
-{{ end ~}}
-{{ end # if !requestFields.empty? ~}}
-{{ responseFields = method.ResponseFields | WhereNotObsolete ~}}
-{{ if !responseFields.empty? ~}}
-
-| response | type | description |
-| --- | --- | --- |
-{{ for field in responseFields ~}}
-| {{ field.Name }} | {{ field | GetFieldType | RenderFieldType }} | {{ field.Summary }} |
-{{ end ~}}
-{{ end # if !requestFields.empty? ~}}
-{{ WriteRemarks method ~}}
-{{ WriteCodeGenComment ~}}
-{{ end # for method in Service.Methods | WhereNotObsolete ~}}
-
-{{### DTOs ### ~}}
-{{ for dto in Service.Dtos | WhereNotObsolete ~}}
-
-==> {{ Service.Name }}/{{ dto.Name }}.md
-
-# {{ dto.Name }}
-{{ WriteSummary dto ~}}
-{{ fields = dto.Fields | WhereNotObsolete ~}}
-{{ if HttpService ~}}
-
-```
-{
-{{ for field in fields ~}}
-  "{{ field.Name }}": {{ field | GetFieldType | RenderFieldTypeAsJsonValue }}{{ if !for.last; ','; end }}
-{{ end ~}}
-}
-```
-{{ end # if HttpService ~}}
-{{ if !fields.empty? ~}}
-
-| field | type | description |
-| --- | --- | --- |
-{{ for field in fields ~}}
-| {{ field.Name }} | {{ field | GetFieldType | RenderFieldType }} | {{ field.Summary }} |
-{{ end ~}}
-{{ end # if !fields.empty? ~}}
-{{ WriteRemarks dto ~}}
-{{ WriteCodeGenComment ~}}
-{{ end # for dto in Service.Dtos | WhereNotObsolete ~}}
 
 {{### Enums ### ~}}
 {{ for enum in Service.Enums | WhereNotObsolete ~}}
 
-==> {{ Service.Name }}/{{ enum.Name }}.md
 
-# {{ enum.Name }}
-{{ WriteSummary enum ~}}
-
-| name | description |
-| --- | --- |
+class {{ enum.Name }}(facility.Enum):
+{{ WriteSummaryAndRemarks enum "    " ~}}
 {{ for value in enum.Values | WhereNotObsolete ~}}
-| {{ value.Name }} | {{ value.Summary }} |
+    {{ value.Name | SnakeCase | ToUpper }} = "{{ value.Name }}"  # {{ value.Summary }}
 {{ end ~}}
-{{ WriteRemarks enum ~}}
-{{ WriteCodeGenComment ~}}
-{{ end # for enum in Service.Enums | WhereNotObsolete ~}}
 
-{{### Error Sets ### ~}}
-{{ for errorSet in Service.ErrorSets | WhereNotObsolete ~}}
+{{ end # for enum in Service.Enums ~}}
+{{### DTOs ### ~}}
+{{ for dto in Service.Dtos | WhereNotObsolete ~}}
+{{ WriteDtoDefinition dto (dto.Name | PascalCase) dto.Fields ~}}
+{{ end # for dto in Service.Dtos ~}}
+{{ for method in Service.Methods | WhereNotObsolete ~}}
+{{ WriteDtoDefinition method (method.Name | PascalCase + "Response") method.ResponseFields "Response" ~}}
+{{ end # for dto in Service.Dtos ~}}
 
-==> {{ Service.Name }}/{{ errorSet.Name }}.md
 
-# {{ errorSet.Name }}
-{{ WriteSummary errorSet ~}}
+{{### Client and Methods ### ~}}
+class Client(facility.ClientBase):
+    def __init__(self,
+                 base_uri: str = "{{ if HttpService ~}}{{ HttpService.Url }}{{ end ~}}", *,
+                 headers: typing.Optional[typing.Dict[str, str]] = None,
+                 oauth: typing.Optional[facility.OAuthSettings] = None,
+                 max_retries: int = 0):
+        super().__init__(base_uri=base_uri, headers=headers, oauth=oauth, max_retries=max_retries)
 
-| error | description |
-| --- | --- |
-{{ for error in errorSet.Errors | WhereNotObsolete ~}}
-| {{ error.Name }} | {{ error.Summary }} |
+{{ for method in Service.Methods | WhereNotObsolete ~}}
+{{ http = method | GetHttp ~}}
+{{ if method.RequestFields.empty? ~}}
+    def {{ method.Name | SnakeCase }}(self) -> facility.Result[{{ method.Name | PascalCase }}Response]:
+{{ else }}
+    def {{ method.Name | SnakeCase }}(
+        self, *,
+{{ for field in http | Fields ~}}
+{{ if field | IsRequired ~}}
+        {{ field.ServiceField.Name | SnakeCase }}: {{ field.ServiceField | GetFieldType | RenderFieldTypeDeclaration }},
 {{ end ~}}
-{{ WriteRemarks errorSet ~}}
-{{ WriteCodeGenComment ~}}
-{{ end # for errorSet in Service.ErrorSets | WhereNotObsolete ~}}
+{{ end ~}}
+{{ for field in http | Fields ~}}
+{{ if !(field | IsRequired) ~}}
+        {{ field.ServiceField.Name | SnakeCase }}: {{ field.ServiceField | GetFieldType | RenderFieldTypeDeclaration }} = None,
+{{ end ~}}
+{{ end ~}}
+    ) -> facility.Result[{{ method.Name | PascalCase }}Response]:
+{{ end # if method.RequestFields.empty? ~}}
+        """
+{{ if method.Summary && !method.Summary.empty? ~}}
+        {{ method.Summary }}
+{{ end ~}}
+{{ if method.Remarks && !method.Remarks.empty? ~}}
+
+{{ for line in method.Remarks ~}}
+        {{ line | regex.replace `\[([^\]]+)\]\(\)` `$1` }}
+{{ end ~}}
+{{ end # if method.Remarks ~}}
+{{ if method.RequestFields && !method.RequestFields.empty? ~}}
+
+{{ for field in method.RequestFields ~}}
+        :param {{ field.Name | SnakeCase }}: {{ field.Summary }}
+{{ end ~}}
+{{ end ~}}
+        """
+{{ if http ~}}
+{{ for field in http | Fields ~}}
+{{ if field | IsRequired ~}}
+        if {{ field.ServiceField.Name | SnakeCase }} is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'{{ field.ServiceField.Name }}' is required."))
+{{ end # if IsRequired ~}}
+{{ end # for field ~}}
+        uri_ = {{ RenderPathAsPythonFString http ~}}
+
+{{ WriteFieldsDict http.QueryFields "query_" "dict()" null 1 ~}}
+{{ if http.RequestBodyField ~}}
+        request_ = {{ WriteFieldToData http.RequestBodyField.ServiceField ~}}
+
+{{ else ~}}
+{{ WriteFieldsDict http.RequestNormalFields "request_" "None" ~}}
+{{ end # if http.RequestBodyField else ~}}
+{{ WriteFieldsDict http.RequestHeaderFields "headers_" "None" "str" 1 ~}}
+        response_ = self.send_request("{{ http.Method }}", uri_, query=query_, request=request_, headers=headers_)
+{{ for response in http.ValidResponses ~}}
+        if response_.status_code == {{ response.StatusCode + 0 }}:  # {{ response.StatusCode | StatusCodePhrase }}
+            return facility.Result(
+                value={{ method.Name | PascalCase }}Response.from_response({{ if response.BodyField || (!http.ResponseHeaderFields.empty?) ~}}
+
+                    {{end ~}}response_{{ if response.BodyField ~}},
+                    body="{{ response.BodyField.ServiceField.Name }}"{{ if (response.BodyField.ServiceField | GetFieldType).Kind | KindName == "Boolean" ~}},
+                    default=True{{ end ~}}{{ end ~}}{{ if !http.ResponseHeaderFields.empty? ~}},
+                    header_map={{ "{" }}
+{{ for field in http.ResponseHeaderFields ~}}
+                        "{{ field.Name }}": "{{ field.ServiceField.Name }}",
+{{ end ~}}
+                    {{ "}" }}{{ end ~}}))
+{{ end # for response ~}}
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
+{{ else # if http ~}}
+        raise NotImplementedError()
+{{ end # if http ... else ~}}
+{{ end # for method in Service.Methods | WhereNotObsolete ~}}
+
+
+# {{ CodeGenCommentText }}

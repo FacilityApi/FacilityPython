@@ -48,8 +48,7 @@ internal static class Build
 			RunDotNet("tool", "restore");
 			RunDotNet("tool", "run", "FacilityConformance", "fsd", "--output", "conformance/ConformanceApi.fsd", verifyOption);
 
-			RunDotNet(toolPath, "conformance/ConformanceApi.fsd", "conformance/http/", "--newline", "lf", verifyOption);
-			RunDotNet(toolPath, "conformance/ConformanceApi.fsd", "conformance/no-http/", "--no-http", "--newline", "lf", verifyOption);
+			RunDotNet(toolPath, "conformance/ConformanceApi.fsd", "conformance/", "--newline", "lf", verifyOption);
 		}
 	});
 }

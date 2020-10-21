@@ -1,7 +1,9 @@
 .vs/
+.vscode/
 bin/
 obj/
 release/
+.idea/
 
 *.cache
 *.log
@@ -11,3 +13,5 @@ release/
 launchSettings.json
 nCrunchTemp*
 _ReSharper*
+*.pyc
+

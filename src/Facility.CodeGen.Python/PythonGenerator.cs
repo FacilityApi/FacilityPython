@@ -22,18 +22,13 @@ namespace Facility.CodeGen.Python
 			FileGenerator.GenerateFiles(new PythonGenerator { GeneratorName = nameof(PythonGenerator) }, settings);
 
 		/// <summary>
-		/// True if the HTTP documentation should be omitted.
-		/// </summary>
-		public bool NoHttp { get; set; }
-
-		/// <summary>
 		/// Generates the Python.
 		/// </summary>
 		public override CodeGenOutput GenerateOutput(ServiceInfo serviceInfo)
 		{
 			var outputFiles = new List<CodeGenFile>();
 
-			var httpServiceInfo = NoHttp ? null : HttpServiceInfo.Create(serviceInfo);
+			var httpServiceInfo = HttpServiceInfo.Create(serviceInfo);
 
 			var templateText = GetEmbeddedResourceText("Facility.CodeGen.Python.template.scriban-txt");
 			var outputText = CodeTemplateUtility.Render(templateText, new CodeTemplateGlobals(this, serviceInfo, httpServiceInfo));
@@ -78,7 +73,7 @@ namespace Facility.CodeGen.Python
 			var codeGenComment = CodeGenUtility.GetCodeGenComment(GeneratorName ?? "");
 			var patternsToClean = new[]
 			{
-				new CodeGenPattern("*.md", codeGenComment),
+				new CodeGenPattern("*.py", codeGenComment),
 			};
 			return new CodeGenOutput(outputFiles, patternsToClean);
 		}
@@ -88,7 +83,6 @@ namespace Facility.CodeGen.Python
 		/// </summary>
 		public override void ApplySettings(FileGeneratorSettings settings)
 		{
-			NoHttp = ((PythonGeneratorSettings) settings).NoHttp;
 		}
 
 		/// <summary>

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using Facility.Definition;
 using Facility.Definition.CodeGen;
 using Facility.Definition.Http;
@@ -24,48 +25,61 @@ namespace Facility.CodeGen.Python
 
 		public string CodeGenCommentText { get; }
 
-		public HttpElementInfo? GetHttp(ServiceElementInfo methodInfo) =>
+		public string KindName(ServiceTypeKind kind) => kind.ToString();
+
+		public HttpElementInfo? GetHttp(ServiceMethodInfo methodInfo) =>
 			HttpService?.Methods.FirstOrDefault(x => x.ServiceMethod == methodInfo);
 
 		public ServiceTypeInfo? GetFieldType(ServiceFieldInfo field) => Service.GetFieldType(field);
 
-		public static string RenderFieldType(ServiceTypeInfo typeInfo) =>
+		public bool IsRequired(HttpFieldInfo field) => field is HttpBodyFieldInfo || field is HttpPathFieldInfo || field.ServiceField.IsRequired;
+
+		public IEnumerable<HttpFieldInfo> Fields(HttpMethodInfo methodInfo)
+		{
+			var foo = methodInfo.RequestHeaderFields.Cast<HttpFieldInfo>().Concat(methodInfo.PathFields.Cast<HttpFieldInfo>());
+			if (methodInfo.RequestBodyField != null)
+				foo = foo.Append(methodInfo.RequestBodyField);
+			foo = foo.Concat(methodInfo.QueryFields.Cast<HttpFieldInfo>()).Concat(methodInfo.RequestNormalFields.Cast<HttpFieldInfo>());
+			return foo;
+		}
+
+		public static string RenderFieldTypeClass(ServiceTypeInfo typeInfo) =>
 			typeInfo.Kind switch
 			{
-				ServiceTypeKind.String => "string",
-				ServiceTypeKind.Boolean => "boolean",
-				ServiceTypeKind.Double => "double",
-				ServiceTypeKind.Int32 => "int32",
-				ServiceTypeKind.Int64 => "int64",
-				ServiceTypeKind.Decimal => "decimal",
+				ServiceTypeKind.String => "str",
+				ServiceTypeKind.Boolean => "bool",
+				ServiceTypeKind.Double => "float",
+				ServiceTypeKind.Int32 => "int",
+				ServiceTypeKind.Int64 => "int",
+				ServiceTypeKind.Decimal => "decimal.Decimal",
 				ServiceTypeKind.Bytes => "bytes",
 				ServiceTypeKind.Object => "object",
-				ServiceTypeKind.Error => "error",
-				ServiceTypeKind.Dto => $"[{typeInfo.Dto!.Name}]({typeInfo.Dto.Name}.md)",
-				ServiceTypeKind.Enum => $"[{typeInfo.Enum!.Name}]({typeInfo.Enum.Name}.md)",
-				ServiceTypeKind.Result => $"result<{RenderFieldType(typeInfo.ValueType!)}>",
-				ServiceTypeKind.Array => $"{RenderFieldType(typeInfo.ValueType!)}[]",
-				ServiceTypeKind.Map => $"map<{RenderFieldType(typeInfo.ValueType!)}>",
+				ServiceTypeKind.Error => "facility.Error",
+				ServiceTypeKind.Dto => typeInfo.Dto!.Name,
+				ServiceTypeKind.Enum => typeInfo.Enum!.Name,
+				ServiceTypeKind.Result => $"facility.Result",
+				ServiceTypeKind.Array => $"list",
+				ServiceTypeKind.Map => $"dict",
 				_ => throw new ArgumentException("Type kind out of range.", nameof(typeInfo)),
 			};
 
-		public static string RenderFieldTypeAsJsonValue(ServiceTypeInfo typeInfo) =>
+		public static string RenderFieldTypeDeclaration(ServiceTypeInfo typeInfo) =>
 			typeInfo.Kind switch
 			{
-				ServiceTypeKind.String => "\"(string)\"",
-				ServiceTypeKind.Boolean => "(true|false)",
-				ServiceTypeKind.Double => "(number)",
-				ServiceTypeKind.Decimal => "(number)",
-				ServiceTypeKind.Int32 => "(integer)",
-				ServiceTypeKind.Int64 => "(integer)",
-				ServiceTypeKind.Bytes => "\"(base64)\"",
-				ServiceTypeKind.Object => "{ ... }",
-				ServiceTypeKind.Error => "{ \"code\": ... }",
-				ServiceTypeKind.Dto => RenderDtoAsJsonValue(typeInfo.Dto!),
-				ServiceTypeKind.Enum => RenderEnumAsJsonValue(typeInfo.Enum!),
-				ServiceTypeKind.Result => $"{{ \"value\": {RenderFieldTypeAsJsonValue(typeInfo.ValueType!)} | \"error\": {{ \"code\": ... }} }}",
-				ServiceTypeKind.Array => $"[ {RenderFieldTypeAsJsonValue(typeInfo.ValueType!)}, ... ]",
-				ServiceTypeKind.Map => $"{{ \"...\": {RenderFieldTypeAsJsonValue(typeInfo.ValueType!)}, ... }}",
+				ServiceTypeKind.String => "str",
+				ServiceTypeKind.Boolean => "bool",
+				ServiceTypeKind.Double => "float",
+				ServiceTypeKind.Int32 => "int",
+				ServiceTypeKind.Int64 => "int",
+				ServiceTypeKind.Decimal => "decimal.Decimal",
+				ServiceTypeKind.Bytes => "bytes",
+				ServiceTypeKind.Object => "object",
+				ServiceTypeKind.Error => "facility.Error",
+				ServiceTypeKind.Dto => typeInfo.Dto!.Name,
+				ServiceTypeKind.Enum => typeInfo.Enum!.Name,
+				ServiceTypeKind.Result => $"facility.Result[{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
+				ServiceTypeKind.Array => $"typing.List[{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
+				ServiceTypeKind.Map => $"typing.Dict[str, {RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
 				_ => throw new ArgumentException("Type kind out of range.", nameof(typeInfo)),
 			};
 
@@ -101,18 +115,41 @@ namespace Facility.CodeGen.Python
 			return reasonPhrase;
 		}
 
-		private static string RenderDtoAsJsonValue(ServiceDtoInfo dtoInfo)
+		public static string SnakeCase(string text)
 		{
-			var visibleFields = dtoInfo.Fields.Where(x => !x.IsObsolete).ToList();
-			return visibleFields.Count == 0 ? "{}" : $"{{ \"{visibleFields[0].Name}\": ... }}";
+			text = Regex.Replace(text, @"(\p{Ll})(\p{Lu})", @"$1_$2").ToLowerInvariant() +
+				(s_pythonReserved.Contains(text) ? "_" : "");
+			return text;
 		}
 
-		private static string RenderEnumAsJsonValue(ServiceEnumInfo enumInfo)
+		public static string PascalCase(string text)
 		{
-			const int maxValues = 3;
-			var values = enumInfo.Values.Where(x => !x.IsObsolete).ToList();
-			return values.Count == 1 ? $"\"{values[0].Name}\"" :
-				"\"(" + string.Join("|", values.Select(x => x.Name).Take(maxValues)) + (values.Count > maxValues ? "|..." : "") + ")\"";
+			text = Regex.Replace(text, @"_(\p{L})", x => x.Value.ToUpperInvariant());
+			if (char.IsLower(text[0]))
+			{
+				text = text.Substring(0, 1).ToUpperInvariant() + text.Substring(1);
+			}
+			return text;
+		}
+
+		public static string ToUpper(string text)
+		{
+			return text.ToUpperInvariant();
+		}
+
+		public static string RenderPathAsPythonFString(HttpMethodInfo http)
+		{
+			string text = http.Path;
+			string prefix = "";
+			foreach (var field in http.PathFields)
+			{
+				string key = "{" + field.Name + "}";
+				string value = SnakeCase(field.ServiceField.Name);
+				text = text.Replace(key, "{facility.encode(" + value + ")}");
+				prefix = "f";
+			}
+			text = $"{prefix}\"{text}\"";
+			return text;
 		}
 
 		private static readonly Dictionary<int, string> s_reasonPhrases = new Dictionary<int, string>
@@ -158,6 +195,58 @@ namespace Facility.CodeGen.Python
 			{ 503, "Service Unavailable" },
 			{ 504, "Gateway Timeout" },
 			{ 505, "Http Version Not Supported" },
+		};
+
+		private static readonly HashSet<string> s_pythonReserved = new HashSet<string>
+		{
+			"and",
+			"as",
+			"assert",
+			"bool",
+			"break",
+			"bytes",
+			"class",
+			"continue",
+			"decimal",
+			"def",
+			"del",
+			"dict",
+			"elif",
+			"else",
+			"enum",
+			"except",
+			"exec",
+			"facility",
+			"finally",
+			"float",
+			"for",
+			"from",
+			"global",
+			"id",
+			"if",
+			"import",
+			"in",
+			"int",
+			"is",
+			"lambda",
+			"list",
+			"map",
+			"not",
+			"object",
+			"or",
+			"pass",
+			"print",
+			"raise",
+			"return",
+			"self",
+			"set",
+			"str",
+			"try",
+			"tuple",
+			"typing",
+			"while",
+			"with",
+			"yield",
 		};
 	}
 }

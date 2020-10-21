@@ -19,7 +19,7 @@ namespace Facility.CodeGen.Python
 			var text = template.Render(templateContext);
 
 			text = Regex.Replace(text, @"[ \t]+\n", "\n");
-			text = Regex.Replace(text, @"\n\n+", "\n\n");
+			text = Regex.Replace(text, @"\n\n\n\n+", "\n\n\n");
 			text = Regex.Replace(text, @"\n+$", "\n");
 
 			return text;
