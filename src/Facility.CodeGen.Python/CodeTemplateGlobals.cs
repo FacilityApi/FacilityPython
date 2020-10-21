@@ -25,6 +25,8 @@ namespace Facility.CodeGen.Python
 
 		public string CodeGenCommentText { get; }
 
+		public string KindName(ServiceTypeKind kind) => kind.ToString();
+
 		public HttpElementInfo? GetHttp(ServiceMethodInfo methodInfo) =>
 			HttpService?.Methods.FirstOrDefault(x => x.ServiceMethod == methodInfo);
 

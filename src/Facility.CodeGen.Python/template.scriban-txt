@@ -1,22 +1,24 @@
 
 {{ func WriteFieldValue # $0 source depth ~}}
-{{ if $0.Kind == 9 }}{{ $0.Dto.Name }}.from_data({{ $1 }}){{ else if $0.Kind == 2 ~}}
-float({{ $1 }}){{ else if $0.Kind == 3 || $0.Kind == 4 ~}}
-int({{ $1 }}){{ else if $0.Kind == 5 ~}}
-decimal.Decimal({{ $1 }}){{ else if $0.Kind == 6 ~}}
-base64.b64decode({{ $1 }}){{ else if $0.Kind == 8 ~}}
-facility.Error.from_data({{ $1 }}){{ else if $0.Kind == 10 && $0.Enum ~}}
-{{ $0.Enum.Name }}.get({{ $1 }}){{ else if $0.Kind == 11 ~}}
-facility.Result.from_data({{ $1 }}){{ else if $0.Kind == 12 && $0.Dto ~}}
-[{{ WriteFieldValue $0.Dto ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else if $0.Kind == 12 && $0.ValueType ~}}
+{{ kind = $0.Kind | KindName ~}}
+{{ if kind == "Dto" }}{{ $0.Dto.Name }}.from_data({{ $1 }}){{ else if kind == "Double" ~}}
+float({{ $1 }}){{ else if kind == "Int32" || kind == "Int64" ~}}
+int({{ $1 }}){{ else if kind == "Decimal" ~}}
+decimal.Decimal({{ $1 }}){{ else if kind == "Bytes" ~}}
+base64.b64decode({{ $1 }}){{ else if kind == "Error" ~}}
+facility.Error.from_data({{ $1 }}){{ else if kind == "Enum" && $0.Enum ~}}
+{{ $0.Enum.Name }}.get({{ $1 }}){{ else if kind == "Result" ~}}
+facility.Result.from_data({{ $1 }}){{ else if kind == "Array" && $0.Dto ~}}
+[{{ WriteFieldValue $0.Dto ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else if kind == "Array" && $0.ValueType ~}}
 [{{ WriteFieldValue $0.ValueType ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else ~}}
 {{ $1 }}{{ end ~}}
 {{ end # func WriteFieldValue ~}}
 
 {{ func WriteDtoFromDataAssignment # field ~}}
 {{ type = $0 | GetFieldType ~}}
-{{ if type.Kind == 1 ~}}{{ $0.Name | SnakeCase }}=facility.string_to_bool(data.get("{{ $0.Name }}")),
-{{ else if type.Kind == 0 || type.Kind == 7 ~}}{{ $0.Name | SnakeCase }}=data.get("{{ $0.Name }}"),
+{{ kind = type.Kind | KindName ~}}
+{{ if kind == "Boolean" ~}}{{ $0.Name | SnakeCase }}=facility.string_to_bool(data.get("{{ $0.Name }}")),
+{{ else if kind == "String" || type.Kind == 7 ~}}{{ $0.Name | SnakeCase }}=data.get("{{ $0.Name }}"),
 {{ else ~}}{{ $0.Name | SnakeCase }}={{ WriteFieldValue type ("data[\"" + $0.Name + "\"]") 1 }} if "{{ $0.Name }}" in data else None,
 {{ end ~}}
 {{ end # func WriteDtoFromDataAssignment ~}}
@@ -45,10 +47,11 @@ facility.Result.from_data({{ $1 }}){{ else if $0.Kind == 12 && $0.Dto ~}}
 {{ end # func WriteCodeGenComment ~}}
 
 {{ func WriteNestedFieldTypeToData ~}}
-{{ if $0.Kind == 8 || $0.Kind == 9 || $0.Kind == 11 # Error|Dto|Result ~}}
-v{{ $1 }}.to_data(){{ else if $0.Kind == 12 && $0.ValueType # Array ~}}
+{{ kind = $0.Kind | KindName ~}}
+{{ if kind == "Error" || kind == "Dto" || kind == "Result" ~}}
+v{{ $1 }}.to_data(){{ else if kind == "Array" && $0.ValueType ~}}
 [{{ WriteNestedFieldTypeToData $0.ValueType $1 + 1 ~}}
- for v{{ $1 + 1 }} in v{{ $1 }}]{{ else if $0.Kind == 13 && $0.ValueType # Map ~}}
+ for v{{ $1 + 1 }} in v{{ $1 }}]{{ else if kind == "Map" && $0.ValueType ~}}
 {k{{ $1 + 1 }}: {{ WriteNestedFieldTypeToData $0.ValueType $1 + 1 ~}}
  for k{{ $1 + 1 }}, v{{ $1 + 1 }} in v{{ $1 }}.items()}{{ else ~}}
 v{{ $1 }}{{ end ~}}
@@ -56,10 +59,11 @@ v{{ $1 }}{{ end ~}}
 
 {{ func WriteFieldToData # field [ifelse] ~}}
 {{ type = $0 | GetFieldType ~}}
+{{ kind = type.Kind | KindName ~}}
 {{ if $1 ~}}{{ ifelse = " if " + ($0.Name | SnakeCase) + " is not None else None" ~}}{{ else ~}}{{ ifelse = "" ~}}{{ end ~}}
-{{ if type.Kind == 8 || type.Kind == 9 || type.Kind == 11 # Error|Dto|Result ~}}
-{{ $0.Name | SnakeCase }}.to_data(){{ ifelse }}{{ else if type.Kind == 12 && type.ValueType # Array ~}}
-[{{ WriteNestedFieldTypeToData type.ValueType 1 }} for v1 in {{ $0.Name | SnakeCase }}]{{ ifelse }}{{ else if type.Kind == 13 && type.ValueType # Map ~}}
+{{ if kind == "Error" || kind == "Dto" || kind == "Result" ~}}
+{{ $0.Name | SnakeCase }}.to_data(){{ ifelse }}{{ else if kind == "Array" && type.ValueType ~}}
+[{{ WriteNestedFieldTypeToData type.ValueType 1 }} for v1 in {{ $0.Name | SnakeCase }}]{{ ifelse }}{{ else if kind == "Map" && type.ValueType ~}}
 {k1: {{ WriteNestedFieldTypeToData type.ValueType 1 }} for k1, v1 in {{ $0.Name | SnakeCase }}.items()}{{ ifelse }}{{ else ~}}
 {{ $0.Name | SnakeCase }}{{ end ~}}
 {{ end # func WriteFieldToData ~}}
@@ -261,7 +265,7 @@ class Client(facility.ClientBase):
                 value={{ method.Name | PascalCase }}Response.from_response({{ if response.BodyField || (!http.ResponseHeaderFields.empty?) ~}}
 
                     {{end ~}}response_{{ if response.BodyField ~}},
-                    body="{{ response.BodyField.ServiceField.Name }}"{{ if (response.BodyField.ServiceField | GetFieldType).Kind == 1 # Boolean ~}},
+                    body="{{ response.BodyField.ServiceField.Name }}"{{ if (response.BodyField.ServiceField | GetFieldType).Kind | KindName == "Boolean" ~}},
                     default=True{{ end ~}}{{ end ~}}{{ if !http.ResponseHeaderFields.empty? ~}},
                     header_map={{ "{" }}
 {{ for field in http.ResponseHeaderFields ~}}
