@@ -20,6 +20,7 @@ namespace Facility.CodeGen.Python
 
 			text = Regex.Replace(text, @"[ \t]+\n", "\n");
 			text = Regex.Replace(text, @"\n\n\n\n+", "\n\n\n");
+			text = Regex.Replace(text, @"\n+$", "\n");
 
 			return text;
 		}
