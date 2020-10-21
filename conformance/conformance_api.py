@@ -179,7 +179,7 @@ class Any(facility.DTO):
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "Any":
         return Any(
             string=data.get("string"),
-            boolean=("boolean" in data and data["boolean"] is not False),
+            boolean=facility.string_to_bool(data.get("boolean")),
             double=float(data["double"]) if "double" in data else None,
             int32=int(data["int32"]) if "int32" in data else None,
             int64=int(data["int64"]) if "int64" in data else None,
@@ -629,7 +629,7 @@ class GetWidgetResponse(facility.Response):
         return GetWidgetResponse(
             widget=Widget.from_data(data["widget"]) if "widget" in data else None,
             e_tag=data.get("eTag"),
-            not_modified=("notModified" in data and data["notModified"] is not False),
+            not_modified=facility.string_to_bool(data.get("notModified")),
         )
 
 
@@ -657,8 +657,8 @@ class DeleteWidgetResponse(facility.Response):
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "DeleteWidgetResponse":
         return DeleteWidgetResponse(
-            not_found=("notFound" in data and data["notFound"] is not False),
-            conflict=("conflict" in data and data["conflict"] is not False),
+            not_found=facility.string_to_bool(data.get("notFound")),
+            conflict=facility.string_to_bool(data.get("conflict")),
         )
 
 
@@ -786,7 +786,7 @@ class MirrorHeadersResponse(facility.Response):
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "MirrorHeadersResponse":
         return MirrorHeadersResponse(
             string=data.get("string"),
-            boolean=("boolean" in data and data["boolean"] is not False),
+            boolean=facility.string_to_bool(data.get("boolean")),
             double=float(data["double"]) if "double" in data else None,
             int32=int(data["int32"]) if "int32" in data else None,
             int64=int(data["int64"]) if "int64" in data else None,
@@ -829,7 +829,7 @@ class MixedResponse(facility.Response):
             header=data.get("header"),
             normal=data.get("normal"),
             body=data.get("body"),
-            empty=("empty" in data and data["empty"] is not False),
+            empty=facility.string_to_bool(data.get("empty")),
         )
 
 

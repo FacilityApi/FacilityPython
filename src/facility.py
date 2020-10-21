@@ -5,7 +5,7 @@ import re
 import requests
 import requests.adapters
 from requests.exceptions import ChunkedEncodingError, ContentDecodingError
-from typing import Any, Optional, Dict, Callable, Generic, TypeVar
+from typing import Any, Optional, Dict, Callable, Generic, TypeVar, Union
 from urllib.parse import quote
 
 
@@ -298,3 +298,14 @@ class Enum(enum.Enum):
             v2e = {s.value: s for s in cls}
             setattr(cls, key, v2e)
         return v2e
+
+
+def string_to_bool(value: Union[str, bool, type(None)]) -> Optional[bool]:
+    if isinstance(value, bool):
+        return value
+    if (not isinstance(value, str)) or len(value) == 0:
+        return None
+    if value[0] in "tT1yY":
+        return True
+    if value[0] in "fF0nN":
+        return False

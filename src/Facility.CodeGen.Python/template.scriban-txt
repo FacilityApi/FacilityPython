@@ -3,7 +3,7 @@
 
 {{ func WriteDtoFromDataAssignment # field ~}}
 {{ type = $0 | GetFieldType ~}}
-{{ if type.Kind == 1 ~}}{{ $0.Name | SnakeCase }}=("{{ $0.Name }}" in data and data["{{ $0.Name }}"] is not False),
+{{ if type.Kind == 1 ~}}{{ $0.Name | SnakeCase }}=facility.string_to_bool(data.get("{{ $0.Name }}")),
 {{ else if type.Kind == 0 || type.Kind == 7 ~}}{{ $0.Name | SnakeCase }}=data.get("{{ $0.Name }}"),
 {{ else ~}}{{ $0.Name | SnakeCase }}={{ WriteFieldValue type ("data[\"" + $0.Name + "\"]") 1 }} if "{{ $0.Name }}" in data else None,
 {{ end ~}}
