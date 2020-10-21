@@ -204,10 +204,9 @@ class Client(facility.ClientBase):
                  oauth: typing.Optional[facility.OAuthSettings] = None,
                  max_retries: int = 0):
         super().__init__(base_uri=base_uri, headers=headers, oauth=oauth, max_retries=max_retries)
-
 {{ for method in Service.Methods | WhereNotObsolete ~}}
 {{ http = method | GetHttp ~}}
-{{ if method.RequestFields.empty? ~}}
+{{ if method.RequestFields.empty? }}
     def {{ method.Name | SnakeCase }}(self) -> facility.Result[{{ method.Name | PascalCase }}Response]:
 {{ else }}
     def {{ method.Name | SnakeCase }}(
@@ -279,6 +278,7 @@ class Client(facility.ClientBase):
         raise NotImplementedError()
 {{ end # if http ... else ~}}
 {{ end # for method in Service.Methods | WhereNotObsolete ~}}
+
 
 
 # {{ CodeGenCommentText }}
