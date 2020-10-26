@@ -24,4 +24,4 @@ To install it:
 pip install facilitypython
 ```
 
-Also see: [Building the facilitypython pypi package](BuildPip.Md)
+Also see: [Building the facilitypython pypi package](BuildPip.md)
