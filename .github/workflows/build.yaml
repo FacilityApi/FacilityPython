@@ -36,3 +36,6 @@ jobs:
     - name: Build Linux
       if: runner.os == 'Linux'
       run: ./build.sh package
+    - name: Publish to PyPI Linux
+      if: runner.os == 'Linux'
+      run: ./build.sh try-pip-publish
