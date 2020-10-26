@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Faithlife.Build;
+using static Faithlife.Build.AppRunner;
 using static Faithlife.Build.BuildUtility;
 using static Faithlife.Build.DotNetRunner;
 
@@ -72,13 +73,13 @@ internal static class Build
 		void CreatePipPackage()
 		{
 			CopyFiles("src", "pip/facilitypython", "*.py");
-			AppRunner.RunApp("python", "-m pip install --user --upgrade setuptools wheel twine".Split());
-			AppRunner.RunApp("python", new AppRunnerSettings
+			RunApp("python", "-m pip install --user --upgrade setuptools wheel twine".Split());
+			RunApp("python", new AppRunnerSettings
 				{
 					Arguments = "setup.py sdist bdist_wheel".Split(),
 					WorkingDirectory = "pip",
 				});
-			AppRunner.RunApp("python", new AppRunnerSettings
+			RunApp("python", new AppRunnerSettings
 				{
 					Arguments = "-m twine check dist/*".Split(),
 					WorkingDirectory = "pip",
@@ -87,7 +88,7 @@ internal static class Build
 
 		void PublishPipPackage()
 		{
-			AppRunner.RunApp("python", new AppRunnerSettings
+			RunApp("python", new AppRunnerSettings
 				{
 					Arguments = "-m twine upload dist/* --verbose".Split(),
 					WorkingDirectory = "pip",
