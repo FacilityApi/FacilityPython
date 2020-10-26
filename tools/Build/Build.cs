@@ -57,6 +57,11 @@ internal static class Build
 			.Describe("Publishes a pip package")
 			.Does(() => PublishPipPackage());
 
+		build.Target("try-pip-publish")
+			.DependsOn("pip")
+			.Describe("Publishes a pip package. Ignores failure.")
+			.Does(() => PublishPipPackage(ignoreFailure: true));
+
 		void CodeGen(bool verify)
 		{
 			var configuration = dotNetBuildSettings!.BuildOptions!.ConfigurationOption!.Value;
@@ -86,13 +91,16 @@ internal static class Build
 				});
 		}
 
-		void PublishPipPackage()
+		void PublishPipPackage(bool ignoreFailure = false)
 		{
-			RunApp("python", new AppRunnerSettings
-				{
-					Arguments = "-m twine upload dist/* --verbose".Split(),
-					WorkingDirectory = "pip",
-				});
+			var settings = new AppRunnerSettings
+			{
+				Arguments = "-m twine upload dist/* --verbose".Split(),
+				WorkingDirectory = "pip",
+			};
+			if (ignoreFailure)
+				settings.IsExitCodeSuccess = _ => true;
+			RunApp("python", settings);
 		}
 	});
 
