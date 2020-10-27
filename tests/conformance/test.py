@@ -17,6 +17,14 @@ class ConformanceTester:
         self.logger = logging.getLogger(self.__class__.__name__)
         if verbose:
             self.logger.setLevel(logging.DEBUG)
+        self.dtos = {
+            cls.__name__: cls for cls in
+            facility.DTO.__subclasses__()
+        }
+        self.enums = {
+            cls.__name__: cls for cls in
+            facility.Enum.__subclasses__()
+        }
 
     def run(self, json_path: str) -> int:
         with open(json_path, "r", encoding="utf-8") as fp:
@@ -41,14 +49,29 @@ class ConformanceTester:
         return re.sub(r'([a-z])([A-Z])', r'\1_\2', name).lower()
 
     def get_from_data(self, data: typing.Optional[dict], annotation):
-        if data is None:
-            return None
-        if inspect.isclass(annotation) and issubclass(annotation, facility.DTO):
-            return annotation.from_data(data)
+        if data is None or annotation is None:
+            return data
+        if isinstance(annotation, str):
+            annotation_ = self.dtos.get(annotation) or self.enums.get(annotation)
+            if annotation_ is None:
+                raise ValueError(f"Unknown type annotation: {annotation}")
+            annotation = annotation_
+        if inspect.isclass(annotation):
+            if issubclass(annotation, facility.DTO):
+                return annotation.from_data(data)
+            if issubclass(annotation, facility.Enum) and isinstance(data, str):
+                return annotation.get(data)
+        if isinstance(annotation, typing.ForwardRef):
+            origin = getattr(annotation, "__forward_arg__", None)
+            if origin:
+                return self.get_from_data(data, origin)
         if isinstance(annotation, typing._GenericAlias):
             origin = getattr(annotation, "__origin__", None)
-            if inspect.isclass(origin) and issubclass(origin, facility.DTO):
-                return origin.from_data(data)
+            if inspect.isclass(origin):
+                if issubclass(origin, facility.DTO):
+                    return origin.from_data(data)
+                if issubclass(origin, facility.Enum) and isinstance(data, str):
+                    return origin.get(data)
             args = getattr(annotation, "__args__", [])
             if origin is list:
                 if len(args) != 1:
@@ -64,6 +87,13 @@ class ConformanceTester:
                 if not isinstance(data, dict):
                     raise ValueError(f"Expected {annotation} not {data}")
                 return {k: self.get_from_data(v, sub_type) for k, v in data.items()}
+            if origin is typing.Union:
+                for arg in args:
+                    if inspect.isclass(arg):
+                       if issubclass(arg, facility.DTO):
+                          return arg.from_data(data)
+                       if issubclass(arg, facility.Enum) and isinstance(data, str):
+                          return arg.get(data)
             raise ValueError(f"Data mismatches generic data type: {annotation} <= {data}")
         if annotation in (bytes, bytearray):
             return bytes(data)
