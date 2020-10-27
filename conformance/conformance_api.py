@@ -110,7 +110,7 @@ class Any(facility.DTO):
         object_: object,
         error: facility.Error,
         data: "Any",
-        enum_: Answer,
+        enum_: "Answer",
         array: "AnyArray",
         map_: "AnyMap",
         result: "AnyResult",
@@ -207,8 +207,8 @@ class AnyArray(facility.DTO):
         bytes_: typing.List[bytes],
         object_: typing.List[object],
         error: typing.List[facility.Error],
-        data: typing.List[Any],
-        enum_: typing.List[Answer],
+        data: typing.List["Any"],
+        enum_: typing.List["Answer"],
         array: typing.List[typing.List[int]],
         map_: typing.List[typing.Dict[str, int]],
         result: typing.List[facility.Result[int]],
@@ -305,8 +305,8 @@ class AnyMap(facility.DTO):
         bytes_: typing.Dict[str, bytes],
         object_: typing.Dict[str, object],
         error: typing.Dict[str, facility.Error],
-        data: typing.Dict[str, Any],
-        enum_: typing.Dict[str, Answer],
+        data: typing.Dict[str, "Any"],
+        enum_: typing.Dict[str, "Answer"],
         array: typing.Dict[str, typing.List[int]],
         map_: typing.Dict[str, typing.Dict[str, int]],
         result: typing.Dict[str, facility.Result[int]],
@@ -403,8 +403,8 @@ class AnyResult(facility.DTO):
         bytes_: facility.Result[bytes],
         object_: facility.Result[object],
         error: facility.Result[facility.Error],
-        data: facility.Result[Any],
-        enum_: facility.Result[Answer],
+        data: facility.Result["Any"],
+        enum_: facility.Result["Answer"],
         array: facility.Result[typing.List[int]],
         map_: facility.Result[typing.Dict[str, int]],
         result: facility.Result[facility.Result[int]],
@@ -546,7 +546,7 @@ class GetWidgetsResponse(facility.Response):
     """
     def __init__(
         self,
-        widgets: typing.List[Widget],
+        widgets: typing.List["Widget"],
     ):
         """
         :param widgets: The widgets.
@@ -668,7 +668,7 @@ class GetWidgetBatchResponse(facility.Response):
     """
     def __init__(
         self,
-        results: typing.List[facility.Result[Widget]],
+        results: typing.List[facility.Result["Widget"]],
     ):
         """
         :param results: The widget results.
@@ -748,7 +748,7 @@ class MirrorHeadersResponse(facility.Response):
         int32: int,
         int64: int,
         decimal_: decimal.Decimal,
-        enum_: Answer,
+        enum_: "Answer",
     ):
         """
         :param string:
@@ -902,7 +902,7 @@ class Client(facility.ClientBase):
 
     def create_widget(
         self, *,
-        widget: Widget,
+        widget: "Widget",
     ) -> facility.Result[CreateWidgetResponse]:
         """
         Creates a new widget.
@@ -1032,7 +1032,7 @@ class Client(facility.ClientBase):
 
     def mirror_fields(
         self, *,
-        field: Any = None,
+        field: "Any" = None,
         matrix: typing.List[typing.List[typing.List[float]]] = None,
     ) -> facility.Result[MirrorFieldsResponse]:
         """
@@ -1063,7 +1063,7 @@ class Client(facility.ClientBase):
         int32: int = None,
         int64: int = None,
         decimal_: decimal.Decimal = None,
-        enum_: Answer = None,
+        enum_: "Answer" = None,
     ) -> facility.Result[CheckQueryResponse]:
         """
 
@@ -1108,7 +1108,7 @@ class Client(facility.ClientBase):
         int32: int,
         int64: int,
         decimal_: decimal.Decimal,
-        enum_: Answer,
+        enum_: "Answer",
     ) -> facility.Result[CheckPathResponse]:
         """
 
@@ -1153,7 +1153,7 @@ class Client(facility.ClientBase):
         int32: int = None,
         int64: int = None,
         decimal_: decimal.Decimal = None,
-        enum_: Answer = None,
+        enum_: "Answer" = None,
     ) -> facility.Result[MirrorHeadersResponse]:
         """
 
@@ -1258,13 +1258,13 @@ class Client(facility.ClientBase):
         self, *,
         query: str,
         normal: str,
-        widget: Widget = None,
-        widgets: typing.List[Widget] = None,
-        widget_matrix: typing.List[typing.List[Widget]] = None,
-        widget_result: facility.Result[Widget] = None,
-        widget_results: typing.List[facility.Result[Widget]] = None,
-        widget_map: typing.Dict[str, Widget] = None,
-        has_widget: HasWidget = None,
+        widget: "Widget" = None,
+        widgets: typing.List["Widget"] = None,
+        widget_matrix: typing.List[typing.List["Widget"]] = None,
+        widget_result: facility.Result["Widget"] = None,
+        widget_results: typing.List[facility.Result["Widget"]] = None,
+        widget_map: typing.Dict[str, "Widget"] = None,
+        has_widget: "HasWidget" = None,
     ) -> facility.Result[RequiredResponse]:
         """
 

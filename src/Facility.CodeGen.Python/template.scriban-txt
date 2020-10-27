@@ -78,8 +78,7 @@ class {{ name }}(facility.{{ if $3 ~}}{{ $3 }}{{ else ~}}DTO{{ end ~}}):
     def __init__(
         self,
 {{ for field in fields ~}}
-{{ if (field | GetFieldType).Dto ~}}{{ fquote = '"' ~}}{{ else }}{{ fquote = '' ~}}{{ end ~}}
-        {{ field.Name | SnakeCase }}: {{ fquote }}{{ field | GetFieldType | RenderFieldTypeDeclaration }}{{ fquote }},
+        {{ field.Name | SnakeCase }}: {{ field | GetFieldType | RenderFieldTypeDeclaration }},
 {{ end ~}}
     ):
         """

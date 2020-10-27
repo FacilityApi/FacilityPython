@@ -299,6 +299,9 @@ class Enum(enum.Enum):
             setattr(cls, key, v2e)
         return v2e
 
+    def __str__(self):
+        return self.value
+
 
 def string_to_bool(value: Union[str, bool, type(None)]) -> Optional[bool]:
     if isinstance(value, bool):
