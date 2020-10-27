@@ -38,4 +38,7 @@ jobs:
       run: ./build.sh package
     - name: Publish to PyPI Linux
       if: runner.os == 'Linux'
+      env:
+        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       run: ./build.sh try-pip-publish
