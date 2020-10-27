@@ -5,7 +5,7 @@ import logging
 import re
 import typing
 
-import facility
+from facilitypython import facility
 
 from conformance import conformance_api as api
 

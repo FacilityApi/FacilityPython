@@ -159,7 +159,7 @@ import base64
 import decimal
 import typing
 
-import facility
+from facilitypython import facility
 
 
 {{### Errors ### ~}}
