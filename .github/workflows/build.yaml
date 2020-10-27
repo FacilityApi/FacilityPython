@@ -35,9 +35,9 @@ jobs:
       run: .\build.cmd publish
     - name: Build Linux
       if: runner.os == 'Linux'
-      run: ./build.sh package
+      run: ./build.sh package pip
     - name: Publish to PyPI Linux
-      if: runner.os == 'Linux'
+      if: runner.os == 'Linux' && github.ref == 'refs/heads/master'
       env:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
