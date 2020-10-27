@@ -47,7 +47,7 @@ import base64
 import decimal
 import typing
 
-import facility
+from facilitypython import facility
 
 
 HTTP_STATUS_CODE_TO_ERROR_CODE = {sc: ec for ec, sc in facility.ERROR_CODE_TO_HTTP_STATUS_CODE.items()}
