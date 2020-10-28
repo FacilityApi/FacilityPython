@@ -231,6 +231,7 @@ namespace Facility.CodeGen.Python
 			"lambda",
 			"list",
 			"map",
+			"next",
 			"not",
 			"object",
 			"or",

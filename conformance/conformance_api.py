@@ -1092,7 +1092,7 @@ class Client(facility.ClientBase):
         if decimal_ is not None:
             query_["decimal"] = decimal_
         if enum_ is not None:
-            query_["enum"] = enum_
+            query_["enum"] = enum_.value
         request_ = None
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
@@ -1184,7 +1184,7 @@ class Client(facility.ClientBase):
         if decimal_ is not None:
             headers_["decimal"] = str(decimal_)
         if enum_ is not None:
-            headers_["enum"] = str(enum_)
+            headers_["enum"] = str(enum_.value)
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(

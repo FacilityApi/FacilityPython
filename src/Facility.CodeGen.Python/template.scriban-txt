@@ -61,7 +61,8 @@ v{{ $1 }}{{ end ~}}
 {{ type = $0 | GetFieldType ~}}
 {{ kind = type.Kind | KindName ~}}
 {{ if $1 ~}}{{ ifelse = " if " + ($0.Name | SnakeCase) + " is not None else None" ~}}{{ else ~}}{{ ifelse = "" ~}}{{ end ~}}
-{{ if kind == "Error" || kind == "Dto" || kind == "Result" ~}}
+{{ if kind == "Enum" ~}}
+{{ $0.Name | SnakeCase }}.value{{ else if kind == "Error" || kind == "Dto" || kind == "Result" ~}}
 {{ $0.Name | SnakeCase }}.to_data(){{ ifelse }}{{ else if kind == "Array" && type.ValueType ~}}
 [{{ WriteNestedFieldTypeToData type.ValueType 1 }} for v1 in {{ $0.Name | SnakeCase }}]{{ ifelse }}{{ else if kind == "Map" && type.ValueType ~}}
 {k1: {{ WriteNestedFieldTypeToData type.ValueType 1 }} for k1, v1 in {{ $0.Name | SnakeCase }}.items()}{{ ifelse }}{{ else ~}}
