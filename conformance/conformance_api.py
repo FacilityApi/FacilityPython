@@ -74,8 +74,9 @@ class Widget(facility.DTO):
     """
     def __init__(
         self,
-        id_: int,
-        name: str,
+        *,
+        id_: int = None,
+        name: str = None,
     ):
         """
         :param id_: A unique identifier for the widget.
@@ -100,20 +101,21 @@ class Widget(facility.DTO):
 class Any(facility.DTO):
     def __init__(
         self,
-        string: str,
-        boolean: bool,
-        double: float,
-        int32: int,
-        int64: int,
-        decimal_: decimal.Decimal,
-        bytes_: bytes,
-        object_: object,
-        error: facility.Error,
-        data: "Any",
-        enum_: "Answer",
-        array: "AnyArray",
-        map_: "AnyMap",
-        result: "AnyResult",
+        *,
+        string: str = None,
+        boolean: bool = None,
+        double: float = None,
+        int32: int = None,
+        int64: int = None,
+        decimal_: decimal.Decimal = None,
+        bytes_: bytes = None,
+        object_: object = None,
+        error: facility.Error = None,
+        data: "Any" = None,
+        enum_: "Answer" = None,
+        array: "AnyArray" = None,
+        map_: "AnyMap" = None,
+        result: "AnyResult" = None,
     ):
         """
         :param string:
@@ -198,20 +200,21 @@ class Any(facility.DTO):
 class AnyArray(facility.DTO):
     def __init__(
         self,
-        string: typing.List[str],
-        boolean: typing.List[bool],
-        double: typing.List[float],
-        int32: typing.List[int],
-        int64: typing.List[int],
-        decimal_: typing.List[decimal.Decimal],
-        bytes_: typing.List[bytes],
-        object_: typing.List[object],
-        error: typing.List[facility.Error],
-        data: typing.List["Any"],
-        enum_: typing.List["Answer"],
-        array: typing.List[typing.List[int]],
-        map_: typing.List[typing.Dict[str, int]],
-        result: typing.List[facility.Result[int]],
+        *,
+        string: typing.List[str] = None,
+        boolean: typing.List[bool] = None,
+        double: typing.List[float] = None,
+        int32: typing.List[int] = None,
+        int64: typing.List[int] = None,
+        decimal_: typing.List[decimal.Decimal] = None,
+        bytes_: typing.List[bytes] = None,
+        object_: typing.List[object] = None,
+        error: typing.List[facility.Error] = None,
+        data: typing.List["Any"] = None,
+        enum_: typing.List["Answer"] = None,
+        array: typing.List[typing.List[int]] = None,
+        map_: typing.List[typing.Dict[str, int]] = None,
+        result: typing.List[facility.Result[int]] = None,
     ):
         """
         :param string:
@@ -296,20 +299,21 @@ class AnyArray(facility.DTO):
 class AnyMap(facility.DTO):
     def __init__(
         self,
-        string: typing.Dict[str, str],
-        boolean: typing.Dict[str, bool],
-        double: typing.Dict[str, float],
-        int32: typing.Dict[str, int],
-        int64: typing.Dict[str, int],
-        decimal_: typing.Dict[str, decimal.Decimal],
-        bytes_: typing.Dict[str, bytes],
-        object_: typing.Dict[str, object],
-        error: typing.Dict[str, facility.Error],
-        data: typing.Dict[str, "Any"],
-        enum_: typing.Dict[str, "Answer"],
-        array: typing.Dict[str, typing.List[int]],
-        map_: typing.Dict[str, typing.Dict[str, int]],
-        result: typing.Dict[str, facility.Result[int]],
+        *,
+        string: typing.Dict[str, str] = None,
+        boolean: typing.Dict[str, bool] = None,
+        double: typing.Dict[str, float] = None,
+        int32: typing.Dict[str, int] = None,
+        int64: typing.Dict[str, int] = None,
+        decimal_: typing.Dict[str, decimal.Decimal] = None,
+        bytes_: typing.Dict[str, bytes] = None,
+        object_: typing.Dict[str, object] = None,
+        error: typing.Dict[str, facility.Error] = None,
+        data: typing.Dict[str, "Any"] = None,
+        enum_: typing.Dict[str, "Answer"] = None,
+        array: typing.Dict[str, typing.List[int]] = None,
+        map_: typing.Dict[str, typing.Dict[str, int]] = None,
+        result: typing.Dict[str, facility.Result[int]] = None,
     ):
         """
         :param string:
@@ -394,20 +398,21 @@ class AnyMap(facility.DTO):
 class AnyResult(facility.DTO):
     def __init__(
         self,
-        string: facility.Result[str],
-        boolean: facility.Result[bool],
-        double: facility.Result[float],
-        int32: facility.Result[int],
-        int64: facility.Result[int],
-        decimal_: facility.Result[decimal.Decimal],
-        bytes_: facility.Result[bytes],
-        object_: facility.Result[object],
-        error: facility.Result[facility.Error],
-        data: facility.Result["Any"],
-        enum_: facility.Result["Answer"],
-        array: facility.Result[typing.List[int]],
-        map_: facility.Result[typing.Dict[str, int]],
-        result: facility.Result[facility.Result[int]],
+        *,
+        string: facility.Result[str] = None,
+        boolean: facility.Result[bool] = None,
+        double: facility.Result[float] = None,
+        int32: facility.Result[int] = None,
+        int64: facility.Result[int] = None,
+        decimal_: facility.Result[decimal.Decimal] = None,
+        bytes_: facility.Result[bytes] = None,
+        object_: facility.Result[object] = None,
+        error: facility.Result[facility.Error] = None,
+        data: facility.Result["Any"] = None,
+        enum_: facility.Result["Answer"] = None,
+        array: facility.Result[typing.List[int]] = None,
+        map_: facility.Result[typing.Dict[str, int]] = None,
+        result: facility.Result[facility.Result[int]] = None,
     ):
         """
         :param string:
@@ -492,7 +497,8 @@ class AnyResult(facility.DTO):
 class HasWidget(facility.DTO):
     def __init__(
         self,
-        widget: "Widget",
+        *,
+        widget: "Widget" = None,
     ):
         """
         :param widget:
@@ -517,8 +523,9 @@ class GetApiInfoResponse(facility.Response):
     """
     def __init__(
         self,
-        service: str,
-        version: str,
+        *,
+        service: str = None,
+        version: str = None,
     ):
         """
         :param service: The name of the service.
@@ -546,7 +553,8 @@ class GetWidgetsResponse(facility.Response):
     """
     def __init__(
         self,
-        widgets: typing.List["Widget"],
+        *,
+        widgets: typing.List["Widget"] = None,
     ):
         """
         :param widgets: The widgets.
@@ -569,9 +577,10 @@ class CreateWidgetResponse(facility.Response):
     """
     def __init__(
         self,
-        widget: "Widget",
-        url: str,
-        e_tag: str,
+        *,
+        widget: "Widget" = None,
+        url: str = None,
+        e_tag: str = None,
     ):
         """
         :param widget: The created widget.
@@ -604,9 +613,10 @@ class GetWidgetResponse(facility.Response):
     """
     def __init__(
         self,
-        widget: "Widget",
-        e_tag: str,
-        not_modified: bool,
+        *,
+        widget: "Widget" = None,
+        e_tag: str = None,
+        not_modified: bool = None,
     ):
         """
         :param widget: The requested widget.
@@ -639,8 +649,9 @@ class DeleteWidgetResponse(facility.Response):
     """
     def __init__(
         self,
-        not_found: bool,
-        conflict: bool,
+        *,
+        not_found: bool = None,
+        conflict: bool = None,
     ):
         """
         :param not_found: The widget was not found.
@@ -668,7 +679,8 @@ class GetWidgetBatchResponse(facility.Response):
     """
     def __init__(
         self,
-        results: typing.List[facility.Result["Widget"]],
+        *,
+        results: typing.List[facility.Result["Widget"]] = None,
     ):
         """
         :param results: The widget results.
@@ -688,8 +700,9 @@ class GetWidgetBatchResponse(facility.Response):
 class MirrorFieldsResponse(facility.Response):
     def __init__(
         self,
-        field: "Any",
-        matrix: typing.List[typing.List[typing.List[float]]],
+        *,
+        field: "Any" = None,
+        matrix: typing.List[typing.List[typing.List[float]]] = None,
     ):
         """
         :param field:
@@ -712,13 +725,6 @@ class MirrorFieldsResponse(facility.Response):
 
 
 class CheckQueryResponse(facility.Response):
-    def __init__(
-        self,
-    ):
-        """
-        """
-        super().__init__()
-
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "CheckQueryResponse":
         return CheckQueryResponse(
@@ -726,13 +732,6 @@ class CheckQueryResponse(facility.Response):
 
 
 class CheckPathResponse(facility.Response):
-    def __init__(
-        self,
-    ):
-        """
-        """
-        super().__init__()
-
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "CheckPathResponse":
         return CheckPathResponse(
@@ -742,13 +741,14 @@ class CheckPathResponse(facility.Response):
 class MirrorHeadersResponse(facility.Response):
     def __init__(
         self,
-        string: str,
-        boolean: bool,
-        double: float,
-        int32: int,
-        int64: int,
-        decimal_: decimal.Decimal,
-        enum_: "Answer",
+        *,
+        string: str = None,
+        boolean: bool = None,
+        double: float = None,
+        int32: int = None,
+        int64: int = None,
+        decimal_: decimal.Decimal = None,
+        enum_: "Answer" = None,
     ):
         """
         :param string:
@@ -798,10 +798,11 @@ class MirrorHeadersResponse(facility.Response):
 class MixedResponse(facility.Response):
     def __init__(
         self,
-        header: str,
-        normal: str,
-        body: object,
-        empty: bool,
+        *,
+        header: str = None,
+        normal: str = None,
+        body: object = None,
+        empty: bool = None,
     ):
         """
         :param header:
@@ -836,7 +837,8 @@ class MixedResponse(facility.Response):
 class RequiredResponse(facility.Response):
     def __init__(
         self,
-        normal: str,
+        *,
+        normal: str = None,
     ):
         """
         :param normal:
