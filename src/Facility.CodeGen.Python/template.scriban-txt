@@ -1,5 +1,5 @@
 
-{{ func WriteFieldValue # $0 source depth ~}}
+{{ func WriteFieldValue # field source depth ~}}
 {{ kind = $0.Kind | KindName ~}}
 {{ if kind == "Dto" }}{{ $0.Dto.Name }}.from_data({{ $1 }}){{ else if kind == "Double" ~}}
 float({{ $1 }}){{ else if kind == "Int32" || kind == "Int64" ~}}
@@ -8,7 +8,7 @@ decimal.Decimal({{ $1 }}){{ else if kind == "Bytes" ~}}
 base64.b64decode({{ $1 }}){{ else if kind == "Error" ~}}
 facility.Error.from_data({{ $1 }}){{ else if kind == "Enum" && $0.Enum ~}}
 {{ $0.Enum.Name }}.get({{ $1 }}){{ else if kind == "Result" ~}}
-facility.Result.from_data({{ $1 }}){{ else if kind == "Array" && $0.Dto ~}}
+facility.Result.from_data({{ $1 }}{{ if $0.ValueType && $0.ValueType.Dto ~}}, {{ $0.ValueType }}.from_data{{ end ~}}){{ else if kind == "Array" && $0.Dto ~}}
 [{{ WriteFieldValue $0.Dto ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else if kind == "Array" && $0.ValueType ~}}
 [{{ WriteFieldValue $0.ValueType ("v"+$2) ($2+1) }} for {{ ("v"+$2) }} in {{ $1 }}]{{ else ~}}
 {{ $1 }}{{ end ~}}
