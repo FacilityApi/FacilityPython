@@ -486,7 +486,7 @@ class AnyResult(facility.DTO):
             bytes_=facility.Result.from_data(data["bytes"]) if "bytes" in data else None,
             object_=facility.Result.from_data(data["object"]) if "object" in data else None,
             error=facility.Result.from_data(data["error"]) if "error" in data else None,
-            data=facility.Result.from_data(data["data"]) if "data" in data else None,
+            data=facility.Result.from_data(data["data"], Any.from_data) if "data" in data else None,
             enum_=facility.Result.from_data(data["enum"]) if "enum" in data else None,
             array=facility.Result.from_data(data["array"]) if "array" in data else None,
             map_=facility.Result.from_data(data["map"]) if "map" in data else None,
@@ -693,7 +693,7 @@ class GetWidgetBatchResponse(facility.Response):
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "GetWidgetBatchResponse":
         return GetWidgetBatchResponse(
-            results=[facility.Result.from_data(v1) for v1 in data["results"]] if "results" in data else None,
+            results=[facility.Result.from_data(v1, Widget.from_data) for v1 in data["results"]] if "results" in data else None,
         )
 
 
