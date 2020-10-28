@@ -75,10 +75,12 @@ v{{ $1 }}{{ end ~}}
 {{ fields = $2 | WhereNotObsolete ~}}
 class {{ name }}(facility.{{ if $3 ~}}{{ $3 }}{{ else ~}}DTO{{ end ~}}):
 {{ WriteSummaryAndRemarks $0 "    " ~}}
+{{ if !fields.empty? ~}}
     def __init__(
-        self,
+        self, 
+        *,
 {{ for field in fields ~}}
-        {{ field.Name | SnakeCase }}: {{ field | GetFieldType | RenderFieldTypeDeclaration }},
+        {{ field.Name | SnakeCase }}: {{ field | GetFieldType | RenderFieldTypeDeclaration }} = None,
 {{ end ~}}
     ):
         """
@@ -93,6 +95,7 @@ class {{ name }}(facility.{{ if $3 ~}}{{ $3 }}{{ else ~}}DTO{{ end ~}}):
         self.{{ field.Name | SnakeCase }} = {{ field.Name | SnakeCase }}
 {{ end ~}}
 
+{{ end # if !fields.empty ~}}
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "{{ name }}":
         return {{ name }}(
