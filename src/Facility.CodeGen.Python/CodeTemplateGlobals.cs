@@ -244,6 +244,7 @@ namespace Facility.CodeGen.Python
 			"str",
 			"try",
 			"tuple",
+			"type",
 			"typing",
 			"while",
 			"with",
