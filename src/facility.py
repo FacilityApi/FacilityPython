@@ -172,7 +172,7 @@ class Error(DTO):
             if response_json.get('code'):
                 return Error.from_data(response_json)
         error_code = error_code or HTTP_STATUS_CODE_TO_ERROR_CODE.get(response.status_code, 'InvalidResponse')
-        return Error(code='InternalError', message=f'unexpected HTTP status code {response.status_code} {error_code}')
+        return Error(code=error_code, message=f'unexpected HTTP status code {response.status_code} {error_code}')
 
 
 class Result(Generic[T], DTO):
