@@ -167,7 +167,7 @@ class Error(DTO):
     @classmethod
     def from_response(cls: "Error", response: requests.Response, error_code: str = "") -> "Error":
         assert isinstance(response, requests.Response)
-        if response.headers.get('Content-Type') == 'application/json':
+        if response.headers.get('Content-Type') == 'application/json' and response.content:
             response_json = response.json()
             if response_json.get('code'):
                 return Error.from_data(response_json)
