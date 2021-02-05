@@ -168,9 +168,12 @@ class Error(DTO):
     def from_response(cls: "Error", response: requests.Response, error_code: str = "") -> "Error":
         assert isinstance(response, requests.Response)
         if response.headers.get('Content-Type') == 'application/json' and response.content:
-            response_json = response.json()
-            if response_json.get('code'):
-                return Error.from_data(response_json)
+            try:
+                response_json = response.json()
+                if response_json.get('code'):
+                    return Error.from_data(response_json)
+            except (ValueError, AttributeError):
+                pass
         error_code = error_code or HTTP_STATUS_CODE_TO_ERROR_CODE.get(response.status_code, 'InvalidResponse')
         return Error(code=error_code, message=f'unexpected HTTP status code {response.status_code} {error_code}')
 
