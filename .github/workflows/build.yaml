@@ -1,9 +1,14 @@
 name: Build
 on:
+  workflow_dispatch:
   push:
     paths-ignore:
     - '*.md'
     - 'docs/**'
+    branches:
+    - 'master'
+    tags-ignore:
+    - '**'
   pull_request:
     paths-ignore:
     - '*.md'
@@ -11,34 +16,44 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
+defaults:
+  run:
+    shell: pwsh
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
     - name: Check out code
-      uses: actions/checkout@v1
-    - name: Set up .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/checkout@v3
       with:
-        dotnet-version: 3.1.100
-    - name: Build Windows
-      if: runner.os == 'Windows' && github.ref != 'refs/heads/master'
-      run: .\build.cmd package
-    - name: Publish Windows
-      if: runner.os == 'Windows' && github.ref == 'refs/heads/master'
+        fetch-depth: 0
+    - name: Set up .NET 7
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Restore
+      run: .\build.ps1 restore
+    - name: Build
+      run: .\build.ps1 build --skip restore
+    - name: Test
+      run: .\build.ps1 test --skip build
+    - name: Publish
+      if: runner.os == 'Windows' && github.repository_owner == 'FacilityApi' && github.ref == 'refs/heads/master'
       env:
         BUILD_BOT_PASSWORD: ${{ secrets.BUILD_BOT_PASSWORD }}
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      run: .\build.cmd publish
-    - name: Build Linux
+      run: .\build.ps1 publish --skip test
+    - name: Build PIP
       if: runner.os == 'Linux'
+      shell: bash
       run: ./build.sh package pip
-    - name: Publish to PyPI Linux
-      if: runner.os == 'Linux' && github.ref == 'refs/heads/master'
+    - name: Publish PIP
+      if: runner.os == 'Linux' && github.repository_owner == 'FacilityApi' && github.ref == 'refs/heads/master'
       env:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+      shell: bash
       run: ./build.sh try-pip-publish
