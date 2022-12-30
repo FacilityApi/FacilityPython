@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <Description>A tool that generates Python for a Facility Service Definition.</Description>
     <PackageTags>Facility FSD Python CodeGen</PackageTags>
     <IsPackable>true</IsPackable>
@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Facility.CodeGen.Console" Version="2.2.2" />
+    <PackageReference Include="Facility.CodeGen.Console" Version="$(FacilityVersion)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -39,7 +39,7 @@ namespace Facility.CodeGen.Python
 			string? line;
 			while ((line = stringReader.ReadLine()) != null)
 			{
-				var match = Regex.Match(line, @"^==+>");
+				var match = Regex.Match(line, "^==+>");
 				if (match.Success)
 				{
 					fileStart = match.Value;

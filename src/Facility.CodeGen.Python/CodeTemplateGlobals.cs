@@ -57,9 +57,9 @@ namespace Facility.CodeGen.Python
 				ServiceTypeKind.Error => "facility.Error",
 				ServiceTypeKind.Dto => typeInfo.Dto!.Name,
 				ServiceTypeKind.Enum => typeInfo.Enum!.Name,
-				ServiceTypeKind.Result => $"facility.Result",
-				ServiceTypeKind.Array => $"list",
-				ServiceTypeKind.Map => $"dict",
+				ServiceTypeKind.Result => "facility.Result",
+				ServiceTypeKind.Array => "list",
+				ServiceTypeKind.Map => "dict",
 				_ => throw new ArgumentException("Type kind out of range.", nameof(typeInfo)),
 			};
 
@@ -117,7 +117,7 @@ namespace Facility.CodeGen.Python
 
 		public static string SnakeCase(string text)
 		{
-			text = Regex.Replace(text, @"(\p{Ll})(\p{Lu})", @"$1_$2").ToLowerInvariant() +
+			text = Regex.Replace(text, @"(\p{Ll})(\p{Lu})", "$1_$2").ToLowerInvariant() +
 				(s_pythonReserved.Contains(text) ? "_" : "");
 			return text;
 		}
