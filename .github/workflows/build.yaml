@@ -48,12 +48,10 @@ jobs:
       run: .\build.ps1 publish --skip test
     - name: Build PIP
       if: runner.os == 'Linux'
-      shell: bash
-      run: ./build.sh package pip
+      run: ./build.ps1 pip
     - name: Publish PIP
       if: runner.os == 'Linux' && github.repository_owner == 'FacilityApi' && github.ref == 'refs/heads/master'
       env:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-      shell: bash
-      run: ./build.sh try-pip-publish
+      run: ./build.ps1 try-pip-publish --skip pip
