@@ -60,6 +60,7 @@ namespace Facility.CodeGen.Python
 				ServiceTypeKind.Result => "facility.Result",
 				ServiceTypeKind.Array => "list",
 				ServiceTypeKind.Map => "dict",
+				ServiceTypeKind.Nullable => "TODO",
 				_ => throw new ArgumentException("Type kind out of range.", nameof(typeInfo)),
 			};
 
@@ -80,6 +81,7 @@ namespace Facility.CodeGen.Python
 				ServiceTypeKind.Result => $"facility.Result[{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
 				ServiceTypeKind.Array => $"typing.List[{RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
 				ServiceTypeKind.Map => $"typing.Dict[str, {RenderFieldTypeDeclaration(typeInfo.ValueType!)}]",
+				ServiceTypeKind.Nullable => "TODO",
 				_ => throw new ArgumentException("Type kind out of range.", nameof(typeInfo)),
 			};
 

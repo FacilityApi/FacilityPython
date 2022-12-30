@@ -58,7 +58,7 @@ service ConformanceApi
 	method getWidget
 	{
 		/// The widget ID.
-		[required]
+		[required, validate(value: 0..)]
 		id: int32;
 
 		/// Don't get the widget if it has this ETag.
@@ -85,6 +85,7 @@ service ConformanceApi
 	method deleteWidget
 	{
 		/// The widget ID.
+		[validate(value: 0..)]
 		id: int32;
 
 		/// Don't delete the widget unless it has this ETag.
@@ -107,7 +108,7 @@ service ConformanceApi
 	method getWidgetBatch
 	{
 		/// The IDs of the widgets to return.
-		[http(from: body), required]
+		[http(from: body), required, validate(count: ..10)]
 		ids: int32[];
 	}:
 	{
@@ -121,10 +122,11 @@ service ConformanceApi
 	data Widget
 	{
 		/// A unique identifier for the widget.
+		[validate(value: 0..)]
 		id: int32;
 
 		/// The name of the widget.
-		[required]
+		[required, validate(regex: "^[_a-zA-Z0-9]+$", length: 1..10)]
 		name: string;
 	}
 
@@ -147,12 +149,14 @@ service ConformanceApi
 		int32: int32;
 		int64: int64;
 		decimal: decimal;
+
+		[validate]
 		enum: Answer;
 	}:
 	{
 	}
 
-	[http(method: GET, path: "/mirror/{string}/{boolean}/{double}/{int32}/{int64}/{decimal}/{enum}")]
+	[http(method: GET, path: "/checkPath/{string}/{boolean}/{double}/{int32}/{int64}/{decimal}/{enum}")]
 	method checkPath
 	{
 		string: string;
@@ -161,6 +165,8 @@ service ConformanceApi
 		int32: int32;
 		int64: int64;
 		decimal: decimal;
+
+		[validate]
 		enum: Answer;
 	}:
 	{
@@ -213,9 +219,38 @@ service ConformanceApi
 		widgetResults: result<Widget>[];
 		widgetMap: map<Widget>;
 		hasWidget: HasWidget;
+		[validate(count: 2)] point: double[];
 	}:
 	{
 		[required] normal: string;
+	}
+
+	method mirrorBytes
+	{
+		[http(from: body)] content: bytes;
+		[http(from: header, name: Content-Type)] type: string;
+	}:
+	{
+		[http(from: body)] content: bytes;
+		[http(from: header, name: Content-Type)] type: string;
+	}
+
+	method mirrorText
+	{
+		[http(from: body)] content: string;
+		[http(from: header, name: Content-Type)] type: string;
+	}:
+	{
+		[http(from: body)] content: string;
+		[http(from: header, name: Content-Type)] type: string;
+	}
+
+	method bodyTypes
+	{
+		[http(from: body, type: "text/x-input")] content: string;
+	}:
+	{
+		[http(from: body, type: "application/x-output")] content: bytes;
 	}
 
 	data Any
@@ -234,6 +269,7 @@ service ConformanceApi
 		array: AnyArray;
 		map: AnyMap;
 		result: AnyResult;
+		nullable: AnyNullable;
 	}
 
 	data AnyArray
@@ -252,6 +288,7 @@ service ConformanceApi
 		array: int32[][];
 		map: map<int32>[];
 		result: result<int32>[];
+		nullable: nullable<int32>[];
 	}
 
 	data AnyMap
@@ -270,6 +307,7 @@ service ConformanceApi
 		array: map<int32[]>;
 		map: map<map<int32>>;
 		result: map<result<int32>>;
+		nullable: map<nullable<int32>>;
 	}
 
 	data AnyResult
@@ -288,6 +326,25 @@ service ConformanceApi
 		array: result<int32[]>;
 		map: result<map<int32>>;
 		result: result<result<int32>>;
+		nullable: result<nullable<int32>>;
+	}
+
+	data AnyNullable
+	{
+		string: nullable<string>;
+		boolean: nullable<boolean>;
+		double: nullable<double>;
+		int32: nullable<int32>;
+		int64: nullable<int64>;
+		decimal: nullable<decimal>;
+		bytes: nullable<bytes>;
+		object: nullable<object>;
+		error: nullable<error>;
+		data: nullable<Any>;
+		enum: nullable<Answer>;
+		array: nullable<int32[]>;
+		map: nullable<map<int32>>;
+		result: nullable<result<int32>>;
 	}
 
 	data HasWidget

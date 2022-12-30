@@ -116,6 +116,7 @@ class Any(facility.DTO):
         array: "AnyArray" = None,
         map_: "AnyMap" = None,
         result: "AnyResult" = None,
+        nullable: "AnyNullable" = None,
     ):
         """
         :param string:
@@ -132,6 +133,7 @@ class Any(facility.DTO):
         :param array:
         :param map_:
         :param result:
+        :param nullable:
         """
         super().__init__()
         if not isinstance(string, (str, type(None))):
@@ -176,6 +178,9 @@ class Any(facility.DTO):
         if not isinstance(result, (AnyResult, type(None))):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
+        if not isinstance(nullable, (AnyNullable, type(None))):
+            raise ValueError(f"Invalid nullable: {nullable}")
+        self.nullable = nullable
 
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "Any":
@@ -194,6 +199,7 @@ class Any(facility.DTO):
             array=AnyArray.from_data(data["array"]) if "array" in data else None,
             map_=AnyMap.from_data(data["map"]) if "map" in data else None,
             result=AnyResult.from_data(data["result"]) if "result" in data else None,
+            nullable=AnyNullable.from_data(data["nullable"]) if "nullable" in data else None,
         )
 
 
@@ -215,6 +221,7 @@ class AnyArray(facility.DTO):
         array: typing.List[typing.List[int]] = None,
         map_: typing.List[typing.Dict[str, int]] = None,
         result: typing.List[facility.Result[int]] = None,
+        nullable: typing.List[TODO] = None,
     ):
         """
         :param string:
@@ -231,6 +238,7 @@ class AnyArray(facility.DTO):
         :param array:
         :param map_:
         :param result:
+        :param nullable:
         """
         super().__init__()
         if not isinstance(string, (list, type(None))):
@@ -275,6 +283,9 @@ class AnyArray(facility.DTO):
         if not isinstance(result, (list, type(None))):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
+        if not isinstance(nullable, (list, type(None))):
+            raise ValueError(f"Invalid nullable: {nullable}")
+        self.nullable = nullable
 
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "AnyArray":
@@ -293,6 +304,7 @@ class AnyArray(facility.DTO):
             array=[[int(v2) for v2 in v1] for v1 in data["array"]] if "array" in data else None,
             map_=[v1 for v1 in data["map"]] if "map" in data else None,
             result=[facility.Result.from_data(v1) for v1 in data["result"]] if "result" in data else None,
+            nullable=[v1 for v1 in data["nullable"]] if "nullable" in data else None,
         )
 
 
@@ -314,6 +326,7 @@ class AnyMap(facility.DTO):
         array: typing.Dict[str, typing.List[int]] = None,
         map_: typing.Dict[str, typing.Dict[str, int]] = None,
         result: typing.Dict[str, facility.Result[int]] = None,
+        nullable: typing.Dict[str, TODO] = None,
     ):
         """
         :param string:
@@ -330,6 +343,7 @@ class AnyMap(facility.DTO):
         :param array:
         :param map_:
         :param result:
+        :param nullable:
         """
         super().__init__()
         if not isinstance(string, (dict, type(None))):
@@ -374,6 +388,9 @@ class AnyMap(facility.DTO):
         if not isinstance(result, (dict, type(None))):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
+        if not isinstance(nullable, (dict, type(None))):
+            raise ValueError(f"Invalid nullable: {nullable}")
+        self.nullable = nullable
 
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "AnyMap":
@@ -392,6 +409,7 @@ class AnyMap(facility.DTO):
             array=data["array"] if "array" in data else None,
             map_=data["map"] if "map" in data else None,
             result=data["result"] if "result" in data else None,
+            nullable=data["nullable"] if "nullable" in data else None,
         )
 
 
@@ -413,6 +431,7 @@ class AnyResult(facility.DTO):
         array: facility.Result[typing.List[int]] = None,
         map_: facility.Result[typing.Dict[str, int]] = None,
         result: facility.Result[facility.Result[int]] = None,
+        nullable: facility.Result[TODO] = None,
     ):
         """
         :param string:
@@ -429,6 +448,7 @@ class AnyResult(facility.DTO):
         :param array:
         :param map_:
         :param result:
+        :param nullable:
         """
         super().__init__()
         if not isinstance(string, (facility.Result, type(None))):
@@ -473,6 +493,9 @@ class AnyResult(facility.DTO):
         if not isinstance(result, (facility.Result, type(None))):
             raise ValueError(f"Invalid result: {result}")
         self.result = result
+        if not isinstance(nullable, (facility.Result, type(None))):
+            raise ValueError(f"Invalid nullable: {nullable}")
+        self.nullable = nullable
 
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "AnyResult":
@@ -491,6 +514,106 @@ class AnyResult(facility.DTO):
             array=facility.Result.from_data(data["array"]) if "array" in data else None,
             map_=facility.Result.from_data(data["map"]) if "map" in data else None,
             result=facility.Result.from_data(data["result"]) if "result" in data else None,
+            nullable=facility.Result.from_data(data["nullable"]) if "nullable" in data else None,
+        )
+
+
+class AnyNullable(facility.DTO):
+    def __init__(
+        self,
+        *,
+        string: TODO = None,
+        boolean: TODO = None,
+        double: TODO = None,
+        int32: TODO = None,
+        int64: TODO = None,
+        decimal_: TODO = None,
+        bytes_: TODO = None,
+        object_: TODO = None,
+        error: TODO = None,
+        data: TODO = None,
+        enum_: TODO = None,
+        array: TODO = None,
+        map_: TODO = None,
+        result: TODO = None,
+    ):
+        """
+        :param string:
+        :param boolean:
+        :param double:
+        :param int32:
+        :param int64:
+        :param decimal_:
+        :param bytes_:
+        :param object_:
+        :param error:
+        :param data:
+        :param enum_:
+        :param array:
+        :param map_:
+        :param result:
+        """
+        super().__init__()
+        if not isinstance(string, (TODO, type(None))):
+            raise ValueError(f"Invalid string: {string}")
+        self.string = string
+        if not isinstance(boolean, (TODO, type(None))):
+            raise ValueError(f"Invalid boolean: {boolean}")
+        self.boolean = boolean
+        if not isinstance(double, (TODO, type(None))):
+            raise ValueError(f"Invalid double: {double}")
+        self.double = double
+        if not isinstance(int32, (TODO, type(None))):
+            raise ValueError(f"Invalid int32: {int32}")
+        self.int32 = int32
+        if not isinstance(int64, (TODO, type(None))):
+            raise ValueError(f"Invalid int64: {int64}")
+        self.int64 = int64
+        if not isinstance(decimal_, (TODO, type(None))):
+            raise ValueError(f"Invalid decimal_: {decimal_}")
+        self.decimal_ = decimal_
+        if not isinstance(bytes_, (TODO, type(None))):
+            raise ValueError(f"Invalid bytes_: {bytes_}")
+        self.bytes_ = bytes_
+        if not isinstance(object_, (TODO, type(None))):
+            raise ValueError(f"Invalid object_: {object_}")
+        self.object_ = object_
+        if not isinstance(error, (TODO, type(None))):
+            raise ValueError(f"Invalid error: {error}")
+        self.error = error
+        if not isinstance(data, (TODO, type(None))):
+            raise ValueError(f"Invalid data: {data}")
+        self.data = data
+        if not isinstance(enum_, (TODO, type(None))):
+            raise ValueError(f"Invalid enum_: {enum_}")
+        self.enum_ = enum_
+        if not isinstance(array, (TODO, type(None))):
+            raise ValueError(f"Invalid array: {array}")
+        self.array = array
+        if not isinstance(map_, (TODO, type(None))):
+            raise ValueError(f"Invalid map_: {map_}")
+        self.map_ = map_
+        if not isinstance(result, (TODO, type(None))):
+            raise ValueError(f"Invalid result: {result}")
+        self.result = result
+
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "AnyNullable":
+        return AnyNullable(
+            string=data["string"] if "string" in data else None,
+            boolean=data["boolean"] if "boolean" in data else None,
+            double=data["double"] if "double" in data else None,
+            int32=data["int32"] if "int32" in data else None,
+            int64=data["int64"] if "int64" in data else None,
+            decimal_=data["decimal"] if "decimal" in data else None,
+            bytes_=data["bytes"] if "bytes" in data else None,
+            object_=data["object"] if "object" in data else None,
+            error=data["error"] if "error" in data else None,
+            data=data["data"] if "data" in data else None,
+            enum_=data["enum"] if "enum" in data else None,
+            array=data["array"] if "array" in data else None,
+            map_=data["map"] if "map" in data else None,
+            result=data["result"] if "result" in data else None,
         )
 
 
@@ -855,6 +978,81 @@ class RequiredResponse(facility.Response):
         )
 
 
+class MirrorBytesResponse(facility.Response):
+    def __init__(
+        self,
+        *,
+        content: bytes = None,
+        type_: str = None,
+    ):
+        """
+        :param content:
+        :param type_:
+        """
+        super().__init__()
+        if not isinstance(content, (bytes, type(None))):
+            raise ValueError(f"Invalid content: {content}")
+        self.content = content
+        if not isinstance(type_, (str, type(None))):
+            raise ValueError(f"Invalid type_: {type_}")
+        self.type_ = type_
+
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "MirrorBytesResponse":
+        return MirrorBytesResponse(
+            content=base64.b64decode(data["content"]) if "content" in data else None,
+            type_=data.get("type"),
+        )
+
+
+class MirrorTextResponse(facility.Response):
+    def __init__(
+        self,
+        *,
+        content: str = None,
+        type_: str = None,
+    ):
+        """
+        :param content:
+        :param type_:
+        """
+        super().__init__()
+        if not isinstance(content, (str, type(None))):
+            raise ValueError(f"Invalid content: {content}")
+        self.content = content
+        if not isinstance(type_, (str, type(None))):
+            raise ValueError(f"Invalid type_: {type_}")
+        self.type_ = type_
+
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "MirrorTextResponse":
+        return MirrorTextResponse(
+            content=data.get("content"),
+            type_=data.get("type"),
+        )
+
+
+class BodyTypesResponse(facility.Response):
+    def __init__(
+        self,
+        *,
+        content: bytes = None,
+    ):
+        """
+        :param content:
+        """
+        super().__init__()
+        if not isinstance(content, (bytes, type(None))):
+            raise ValueError(f"Invalid content: {content}")
+        self.content = content
+
+    @classmethod
+    def from_data(cls, data: typing.Dict[str, typing.Any]) -> "BodyTypesResponse":
+        return BodyTypesResponse(
+            content=base64.b64decode(data["content"]) if "content" in data else None,
+        )
+
+
 class Client(facility.ClientBase):
     def __init__(self,
                  base_uri: str = "", *,
@@ -1136,7 +1334,7 @@ class Client(facility.ClientBase):
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'decimal' is required."))
         if enum_ is None:
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'enum' is required."))
-        uri_ = f"/mirror/{facility.encode(string)}/{facility.encode(boolean)}/{facility.encode(double)}/{facility.encode(int32)}/{facility.encode(int64)}/{facility.encode(decimal_)}/{facility.encode(enum_)}"
+        uri_ = f"/checkPath/{facility.encode(string)}/{facility.encode(boolean)}/{facility.encode(double)}/{facility.encode(int32)}/{facility.encode(int64)}/{facility.encode(decimal_)}/{facility.encode(enum_)}"
         query_ = dict()
         request_ = None
         headers_ = None
@@ -1267,6 +1465,7 @@ class Client(facility.ClientBase):
         widget_results: typing.List[facility.Result["Widget"]] = None,
         widget_map: typing.Dict[str, "Widget"] = None,
         has_widget: "HasWidget" = None,
+        point: typing.List[float] = None,
     ) -> facility.Result[RequiredResponse]:
         """
 
@@ -1279,6 +1478,7 @@ class Client(facility.ClientBase):
         :param widget_results:
         :param widget_map:
         :param has_widget:
+        :param point:
         """
         if query is None:
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'query' is required."))
@@ -1309,11 +1509,96 @@ class Client(facility.ClientBase):
             request_["widgetMap"] = {k1: v1.to_data() for k1, v1 in widget_map.items()}
         if has_widget is not None:
             request_["hasWidget"] = has_widget.to_data()
+        if point is not None:
+            request_["point"] = [v1 for v1 in point]
         headers_ = None
         response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(
                 value=RequiredResponse.from_response(response_))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
+
+    def mirror_bytes(
+        self, *,
+        content: bytes,
+        type_: str = None,
+    ) -> facility.Result[MirrorBytesResponse]:
+        """
+
+        :param content:
+        :param type_:
+        """
+        if content is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'content' is required."))
+        uri_ = "/mirrorBytes"
+        query_ = dict()
+        request_ = content
+        headers_ = dict()
+        if type_ is not None:
+            headers_["Content-Type"] = str(type_)
+        response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(
+                value=MirrorBytesResponse.from_response(
+                    response_,
+                    body="content",
+                    header_map={
+                        "Content-Type": "type",
+                    }))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
+
+    def mirror_text(
+        self, *,
+        content: str,
+        type_: str = None,
+    ) -> facility.Result[MirrorTextResponse]:
+        """
+
+        :param content:
+        :param type_:
+        """
+        if content is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'content' is required."))
+        uri_ = "/mirrorText"
+        query_ = dict()
+        request_ = content
+        headers_ = dict()
+        if type_ is not None:
+            headers_["Content-Type"] = str(type_)
+        response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(
+                value=MirrorTextResponse.from_response(
+                    response_,
+                    body="content",
+                    header_map={
+                        "Content-Type": "type",
+                    }))
+        return facility.Result(
+            error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
+
+    def body_types(
+        self, *,
+        content: str,
+    ) -> facility.Result[BodyTypesResponse]:
+        """
+
+        :param content:
+        """
+        if content is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'content' is required."))
+        uri_ = "/bodyTypes"
+        query_ = dict()
+        request_ = content
+        headers_ = None
+        response_ = self.send_request("POST", uri_, query=query_, request=request_, headers=headers_)
+        if response_.status_code == 200:  # OK
+            return facility.Result(
+                value=BodyTypesResponse.from_response(
+                    response_,
+                    body="content"))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
 
