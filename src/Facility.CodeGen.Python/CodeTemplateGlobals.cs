@@ -47,6 +47,7 @@ namespace Facility.CodeGen.Python
 			typeInfo.Kind switch
 			{
 				ServiceTypeKind.String => "str",
+				ServiceTypeKind.DateTime => "str",
 				ServiceTypeKind.Boolean => "bool",
 				ServiceTypeKind.Double => "float",
 				ServiceTypeKind.Int32 => "int",
@@ -68,6 +69,7 @@ namespace Facility.CodeGen.Python
 			typeInfo.Kind switch
 			{
 				ServiceTypeKind.String => "str",
+				ServiceTypeKind.DateTime => "str",
 				ServiceTypeKind.Boolean => "bool",
 				ServiceTypeKind.Double => "float",
 				ServiceTypeKind.Int32 => "int",
