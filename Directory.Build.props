@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <VersionPrefix>0.12.0</VersionPrefix>
+    <VersionPrefix>0.13.0</VersionPrefix>
     <LangVersion>11.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -31,7 +31,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <FacilityVersion>2.9.0</FacilityVersion>
+    <FacilityVersion>2.11.0</FacilityVersion>
   </PropertyGroup>
 
   <ItemGroup>

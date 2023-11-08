@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.13.0
+
+* Support datetime
+
 ## 0.11.0
 
 * Advance version past internally-deployed version.

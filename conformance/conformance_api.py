@@ -108,6 +108,7 @@ class Any(facility.DTO):
         int32: int = None,
         int64: int = None,
         decimal_: decimal.Decimal = None,
+        datetime: str = None,
         bytes_: bytes = None,
         object_: object = None,
         error: facility.Error = None,
@@ -125,6 +126,7 @@ class Any(facility.DTO):
         :param int32:
         :param int64:
         :param decimal_:
+        :param datetime:
         :param bytes_:
         :param object_:
         :param error:
@@ -154,6 +156,9 @@ class Any(facility.DTO):
         if not isinstance(decimal_, (decimal.Decimal, type(None))):
             raise ValueError(f"Invalid decimal_: {decimal_}")
         self.decimal_ = decimal_
+        if not isinstance(datetime, (str, type(None))):
+            raise ValueError(f"Invalid datetime: {datetime}")
+        self.datetime = datetime
         if not isinstance(bytes_, (bytes, type(None))):
             raise ValueError(f"Invalid bytes_: {bytes_}")
         self.bytes_ = bytes_
@@ -191,6 +196,7 @@ class Any(facility.DTO):
             int32=int(data["int32"]) if "int32" in data else None,
             int64=int(data["int64"]) if "int64" in data else None,
             decimal_=decimal.Decimal(data["decimal"]) if "decimal" in data else None,
+            datetime=data["datetime"] if "datetime" in data else None,
             bytes_=base64.b64decode(data["bytes"]) if "bytes" in data else None,
             object_=data.get("object"),
             error=facility.Error.from_data(data["error"]) if "error" in data else None,
@@ -213,6 +219,7 @@ class AnyArray(facility.DTO):
         int32: typing.List[int] = None,
         int64: typing.List[int] = None,
         decimal_: typing.List[decimal.Decimal] = None,
+        datetime: typing.List[str] = None,
         bytes_: typing.List[bytes] = None,
         object_: typing.List[object] = None,
         error: typing.List[facility.Error] = None,
@@ -230,6 +237,7 @@ class AnyArray(facility.DTO):
         :param int32:
         :param int64:
         :param decimal_:
+        :param datetime:
         :param bytes_:
         :param object_:
         :param error:
@@ -259,6 +267,9 @@ class AnyArray(facility.DTO):
         if not isinstance(decimal_, (list, type(None))):
             raise ValueError(f"Invalid decimal_: {decimal_}")
         self.decimal_ = decimal_
+        if not isinstance(datetime, (list, type(None))):
+            raise ValueError(f"Invalid datetime: {datetime}")
+        self.datetime = datetime
         if not isinstance(bytes_, (list, type(None))):
             raise ValueError(f"Invalid bytes_: {bytes_}")
         self.bytes_ = bytes_
@@ -296,6 +307,7 @@ class AnyArray(facility.DTO):
             int32=[int(v1) for v1 in data["int32"]] if "int32" in data else None,
             int64=[int(v1) for v1 in data["int64"]] if "int64" in data else None,
             decimal_=[decimal.Decimal(v1) for v1 in data["decimal"]] if "decimal" in data else None,
+            datetime=[v1 for v1 in data["datetime"]] if "datetime" in data else None,
             bytes_=[base64.b64decode(v1) for v1 in data["bytes"]] if "bytes" in data else None,
             object_=[v1 for v1 in data["object"]] if "object" in data else None,
             error=[facility.Error.from_data(v1) for v1 in data["error"]] if "error" in data else None,
@@ -318,6 +330,7 @@ class AnyMap(facility.DTO):
         int32: typing.Dict[str, int] = None,
         int64: typing.Dict[str, int] = None,
         decimal_: typing.Dict[str, decimal.Decimal] = None,
+        datetime: typing.Dict[str, str] = None,
         bytes_: typing.Dict[str, bytes] = None,
         object_: typing.Dict[str, object] = None,
         error: typing.Dict[str, facility.Error] = None,
@@ -335,6 +348,7 @@ class AnyMap(facility.DTO):
         :param int32:
         :param int64:
         :param decimal_:
+        :param datetime:
         :param bytes_:
         :param object_:
         :param error:
@@ -364,6 +378,9 @@ class AnyMap(facility.DTO):
         if not isinstance(decimal_, (dict, type(None))):
             raise ValueError(f"Invalid decimal_: {decimal_}")
         self.decimal_ = decimal_
+        if not isinstance(datetime, (dict, type(None))):
+            raise ValueError(f"Invalid datetime: {datetime}")
+        self.datetime = datetime
         if not isinstance(bytes_, (dict, type(None))):
             raise ValueError(f"Invalid bytes_: {bytes_}")
         self.bytes_ = bytes_
@@ -401,6 +418,7 @@ class AnyMap(facility.DTO):
             int32=data["int32"] if "int32" in data else None,
             int64=data["int64"] if "int64" in data else None,
             decimal_=data["decimal"] if "decimal" in data else None,
+            datetime=data["datetime"] if "datetime" in data else None,
             bytes_=data["bytes"] if "bytes" in data else None,
             object_=data["object"] if "object" in data else None,
             error=data["error"] if "error" in data else None,
@@ -423,6 +441,7 @@ class AnyResult(facility.DTO):
         int32: facility.Result[int] = None,
         int64: facility.Result[int] = None,
         decimal_: facility.Result[decimal.Decimal] = None,
+        datetime: facility.Result[str] = None,
         bytes_: facility.Result[bytes] = None,
         object_: facility.Result[object] = None,
         error: facility.Result[facility.Error] = None,
@@ -440,6 +459,7 @@ class AnyResult(facility.DTO):
         :param int32:
         :param int64:
         :param decimal_:
+        :param datetime:
         :param bytes_:
         :param object_:
         :param error:
@@ -469,6 +489,9 @@ class AnyResult(facility.DTO):
         if not isinstance(decimal_, (facility.Result, type(None))):
             raise ValueError(f"Invalid decimal_: {decimal_}")
         self.decimal_ = decimal_
+        if not isinstance(datetime, (facility.Result, type(None))):
+            raise ValueError(f"Invalid datetime: {datetime}")
+        self.datetime = datetime
         if not isinstance(bytes_, (facility.Result, type(None))):
             raise ValueError(f"Invalid bytes_: {bytes_}")
         self.bytes_ = bytes_
@@ -506,6 +529,7 @@ class AnyResult(facility.DTO):
             int32=facility.Result.from_data(data["int32"]) if "int32" in data else None,
             int64=facility.Result.from_data(data["int64"]) if "int64" in data else None,
             decimal_=facility.Result.from_data(data["decimal"]) if "decimal" in data else None,
+            datetime=facility.Result.from_data(data["datetime"]) if "datetime" in data else None,
             bytes_=facility.Result.from_data(data["bytes"]) if "bytes" in data else None,
             object_=facility.Result.from_data(data["object"]) if "object" in data else None,
             error=facility.Result.from_data(data["error"]) if "error" in data else None,
@@ -528,6 +552,7 @@ class AnyNullable(facility.DTO):
         int32: TODO = None,
         int64: TODO = None,
         decimal_: TODO = None,
+        datetime: TODO = None,
         bytes_: TODO = None,
         object_: TODO = None,
         error: TODO = None,
@@ -544,6 +569,7 @@ class AnyNullable(facility.DTO):
         :param int32:
         :param int64:
         :param decimal_:
+        :param datetime:
         :param bytes_:
         :param object_:
         :param error:
@@ -572,6 +598,9 @@ class AnyNullable(facility.DTO):
         if not isinstance(decimal_, (TODO, type(None))):
             raise ValueError(f"Invalid decimal_: {decimal_}")
         self.decimal_ = decimal_
+        if not isinstance(datetime, (TODO, type(None))):
+            raise ValueError(f"Invalid datetime: {datetime}")
+        self.datetime = datetime
         if not isinstance(bytes_, (TODO, type(None))):
             raise ValueError(f"Invalid bytes_: {bytes_}")
         self.bytes_ = bytes_
@@ -606,6 +635,7 @@ class AnyNullable(facility.DTO):
             int32=data["int32"] if "int32" in data else None,
             int64=data["int64"] if "int64" in data else None,
             decimal_=data["decimal"] if "decimal" in data else None,
+            datetime=data["datetime"] if "datetime" in data else None,
             bytes_=data["bytes"] if "bytes" in data else None,
             object_=data["object"] if "object" in data else None,
             error=data["error"] if "error" in data else None,
@@ -872,6 +902,7 @@ class MirrorHeadersResponse(facility.Response):
         int64: int = None,
         decimal_: decimal.Decimal = None,
         enum_: "Answer" = None,
+        datetime: str = None,
     ):
         """
         :param string:
@@ -881,6 +912,7 @@ class MirrorHeadersResponse(facility.Response):
         :param int64:
         :param decimal_:
         :param enum_:
+        :param datetime:
         """
         super().__init__()
         if not isinstance(string, (str, type(None))):
@@ -904,6 +936,9 @@ class MirrorHeadersResponse(facility.Response):
         if not isinstance(enum_, (Answer, type(None))):
             raise ValueError(f"Invalid enum_: {enum_}")
         self.enum_ = enum_
+        if not isinstance(datetime, (str, type(None))):
+            raise ValueError(f"Invalid datetime: {datetime}")
+        self.datetime = datetime
 
     @classmethod
     def from_data(cls, data: typing.Dict[str, typing.Any]) -> "MirrorHeadersResponse":
@@ -915,6 +950,7 @@ class MirrorHeadersResponse(facility.Response):
             int64=int(data["int64"]) if "int64" in data else None,
             decimal_=decimal.Decimal(data["decimal"]) if "decimal" in data else None,
             enum_=Answer.get(data["enum"]) if "enum" in data else None,
+            datetime=data["datetime"] if "datetime" in data else None,
         )
 
 
@@ -1264,6 +1300,7 @@ class Client(facility.ClientBase):
         int64: int = None,
         decimal_: decimal.Decimal = None,
         enum_: "Answer" = None,
+        datetime: str = None,
     ) -> facility.Result[CheckQueryResponse]:
         """
 
@@ -1274,6 +1311,7 @@ class Client(facility.ClientBase):
         :param int64:
         :param decimal_:
         :param enum_:
+        :param datetime:
         """
         uri_ = "/checkQuery"
         query_ = dict()
@@ -1291,6 +1329,8 @@ class Client(facility.ClientBase):
             query_["decimal"] = decimal_
         if enum_ is not None:
             query_["enum"] = enum_.value
+        if datetime is not None:
+            query_["datetime"] = datetime
         request_ = None
         headers_ = None
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
@@ -1309,6 +1349,7 @@ class Client(facility.ClientBase):
         int64: int,
         decimal_: decimal.Decimal,
         enum_: "Answer",
+        datetime: str,
     ) -> facility.Result[CheckPathResponse]:
         """
 
@@ -1319,6 +1360,7 @@ class Client(facility.ClientBase):
         :param int64:
         :param decimal_:
         :param enum_:
+        :param datetime:
         """
         if string is None:
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'string' is required."))
@@ -1334,7 +1376,9 @@ class Client(facility.ClientBase):
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'decimal' is required."))
         if enum_ is None:
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'enum' is required."))
-        uri_ = f"/checkPath/{facility.encode(string)}/{facility.encode(boolean)}/{facility.encode(double)}/{facility.encode(int32)}/{facility.encode(int64)}/{facility.encode(decimal_)}/{facility.encode(enum_)}"
+        if datetime is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'datetime' is required."))
+        uri_ = f"/checkPath/{facility.encode(string)}/{facility.encode(boolean)}/{facility.encode(double)}/{facility.encode(int32)}/{facility.encode(int64)}/{facility.encode(decimal_)}/{facility.encode(enum_)}/{facility.encode(datetime)}"
         query_ = dict()
         request_ = None
         headers_ = None
@@ -1354,6 +1398,7 @@ class Client(facility.ClientBase):
         int64: int = None,
         decimal_: decimal.Decimal = None,
         enum_: "Answer" = None,
+        datetime: str = None,
     ) -> facility.Result[MirrorHeadersResponse]:
         """
 
@@ -1364,6 +1409,7 @@ class Client(facility.ClientBase):
         :param int64:
         :param decimal_:
         :param enum_:
+        :param datetime:
         """
         uri_ = "/mirrorHeaders"
         query_ = dict()
@@ -1383,6 +1429,8 @@ class Client(facility.ClientBase):
             headers_["decimal"] = str(decimal_)
         if enum_ is not None:
             headers_["enum"] = str(enum_.value)
+        if datetime is not None:
+            headers_["datetime"] = str(datetime)
         response_ = self.send_request("GET", uri_, query=query_, request=request_, headers=headers_)
         if response_.status_code == 200:  # OK
             return facility.Result(
@@ -1396,6 +1444,7 @@ class Client(facility.ClientBase):
                         "int64": "int64",
                         "decimal": "decimal",
                         "enum": "enum",
+                        "datetime": "datetime",
                     }))
         return facility.Result(
             error=facility.Error.from_response(response_, HTTP_STATUS_CODE_TO_ERROR_CODE.get(response_.status_code)))
