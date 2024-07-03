@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.14.0
+
+* Add .NET 8 targets. Update dependencies.
+
 ## 0.13.0
 
 * Support datetime
