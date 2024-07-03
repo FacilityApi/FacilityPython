@@ -3,7 +3,7 @@
 Generates the Python.
 
 ```csharp
-public override CodeGenOutput GenerateOutput(ServiceInfo serviceInfo)
+public override CodeGenOutput GenerateOutput(ServiceInfo service)
 ```
 
 ## See Also
