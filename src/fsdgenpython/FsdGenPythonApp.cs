@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using ArgsReading;
 using Facility.CodeGen.Console;
 using Facility.CodeGen.Python;
@@ -14,12 +12,12 @@ namespace fsdgenpython
 			return new FsdGenPythonApp().Run(args);
 		}
 
-		protected override IReadOnlyList<string> Description => new[]
-		{
+		protected override IReadOnlyList<string> Description =>
+		[
 			"Generates Markdown for a Facility Service Definition.",
-		};
+		];
 
-		protected override IReadOnlyList<string> ExtraUsage => Array.Empty<string>();
+		protected override IReadOnlyList<string> ExtraUsage => [];
 
 		protected override CodeGenerator CreateGenerator() => new PythonGenerator();
 

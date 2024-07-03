@@ -1,16 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net6.0;net7.0;net8.0</TargetFrameworks>
     <Description>A library that generates Python for a Facility Service Definition.</Description>
     <PackageTags>Facility FSD Python CodeGen</PackageTags>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CA1845</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Facility.Definition" Version="$(FacilityVersion)" />
-    <PackageReference Include="Scriban" Version="2.1.4" />
+    <PackageReference Include="Facility.Definition" />
+    <PackageReference Include="Scriban" />
   </ItemGroup>
 
   <ItemGroup>

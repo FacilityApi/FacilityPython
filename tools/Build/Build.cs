@@ -17,13 +17,13 @@ return BuildRunner.Execute(args, build =>
 		Verbosity = DotNetBuildVerbosity.Minimal,
 		CleanSettings = new DotNetCleanSettings
 		{
-			FindDirectoriesToDelete = () => new[]
-			{
+			FindDirectoriesToDelete = () =>
+			[
 				"pip/facilitypython",
 				"pip/facilitypython.egg-info",
 				"pip/dist",
 				"pip/build",
-			},
+			],
 		},
 	};
 
@@ -75,15 +75,15 @@ return BuildRunner.Execute(args, build =>
 		CopyFiles("src", "pip/facilitypython", "*.py");
 		RunApp("python", "-m pip install --user --upgrade setuptools wheel twine".Split());
 		RunApp("python", new AppRunnerSettings
-			{
-				Arguments = "setup.py sdist bdist_wheel".Split(),
-				WorkingDirectory = "pip",
-			});
+		{
+			Arguments = "setup.py sdist bdist_wheel".Split(),
+			WorkingDirectory = "pip",
+		});
 		RunApp("python", new AppRunnerSettings
-			{
-				Arguments = "-m twine check dist/*".Split(),
-				WorkingDirectory = "pip",
-			});
+		{
+			Arguments = "-m twine check dist/*".Split(),
+			WorkingDirectory = "pip",
+		});
 	}
 
 	void PublishPipPackage(bool ignoreFailure = false)

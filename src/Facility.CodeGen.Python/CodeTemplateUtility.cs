@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Scriban;
@@ -25,17 +24,23 @@ namespace Facility.CodeGen.Python
 			return text;
 		}
 
+#if NET6_0_OR_GREATER
+		internal static string ReplaceOrdinal(this string text, string oldValue, string newValue) => text.Replace(oldValue, newValue, StringComparison.Ordinal);
+#else
+		internal static string ReplaceOrdinal(this string text, string oldValue, string newValue) => text.Replace(oldValue, newValue);
+#endif
+
 		private static ScriptObject CreateScriptObject(object globals)
 		{
 			var scriptObject = new ScriptObject();
 
-			foreach (var (name, methodInfo) in globals.GetType().GetProperties().Select(x => (x.Name, x.GetMethod))
+			foreach (var (name, methodInfo) in globals.GetType().GetProperties().Select(x => (x.Name, x.GetMethod!))
 				.Concat(globals.GetType().GetMethods().Select(x => (x.Name, x))))
 			{
 				scriptObject.Import(name,
 					methodInfo.CreateDelegate(Expression.GetDelegateType(
 						methodInfo.GetParameters().Select(parameter => parameter.ParameterType)
-							.Concat(new[] { methodInfo.ReturnType })
+							.Concat([methodInfo.ReturnType])
 							.ToArray()), methodInfo.IsStatic ? null : globals));
 			}
 

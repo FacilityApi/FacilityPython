@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 using Facility.Definition;
 using Facility.Definition.CodeGen;
@@ -24,14 +21,14 @@ namespace Facility.CodeGen.Python
 		/// <summary>
 		/// Generates the Python.
 		/// </summary>
-		public override CodeGenOutput GenerateOutput(ServiceInfo serviceInfo)
+		public override CodeGenOutput GenerateOutput(ServiceInfo service)
 		{
 			var outputFiles = new List<CodeGenFile>();
 
-			var httpServiceInfo = HttpServiceInfo.Create(serviceInfo);
+			var httpServiceInfo = HttpServiceInfo.Create(service);
 
 			var templateText = GetEmbeddedResourceText("Facility.CodeGen.Python.template.scriban-txt");
-			var outputText = CodeTemplateUtility.Render(templateText, new CodeTemplateGlobals(this, serviceInfo, httpServiceInfo));
+			var outputText = CodeTemplateUtility.Render(templateText, new CodeTemplateGlobals(this, service, httpServiceInfo));
 			using var stringReader = new StringReader(outputText);
 
 			var fileStart = "";

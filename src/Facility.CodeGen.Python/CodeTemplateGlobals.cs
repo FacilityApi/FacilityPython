@@ -1,7 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using Facility.Definition;
@@ -113,7 +110,7 @@ namespace Facility.CodeGen.Python
 			}
 		}
 
-		public static string StatusCodePhrase(HttpStatusCode statusCode)
+		public static string? StatusCodePhrase(HttpStatusCode statusCode)
 		{
 			s_reasonPhrases.TryGetValue((int) statusCode, out var reasonPhrase);
 			return reasonPhrase;
@@ -149,7 +146,7 @@ namespace Facility.CodeGen.Python
 			{
 				string key = "{" + field.Name + "}";
 				string value = SnakeCase(field.ServiceField.Name);
-				text = text.Replace(key, "{facility.encode(" + value + ")}");
+				text = text.ReplaceOrdinal(key, "{facility.encode(" + value + ")}");
 				prefix = "f";
 			}
 			text = $"{prefix}\"{text}\"";
