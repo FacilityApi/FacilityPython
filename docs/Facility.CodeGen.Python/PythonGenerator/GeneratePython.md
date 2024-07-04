@@ -3,11 +3,12 @@
 Generates Python.
 
 ```csharp
-public static int GeneratePython(PythonGeneratorSettings settings)
+public static int GeneratePython(ServiceParser parser, PythonGeneratorSettings settings)
 ```
 
 | parameter | description |
 | --- | --- |
+| parser | The parser. |
 | settings | The settings. |
 
 ## Return Value
