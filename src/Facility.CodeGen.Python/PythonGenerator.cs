@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Facility.Definition;
 using Facility.Definition.CodeGen;
+using Facility.Definition.Fsd;
 using Facility.Definition.Http;
 
 namespace Facility.CodeGen.Python
@@ -13,8 +14,18 @@ namespace Facility.CodeGen.Python
 		/// <summary>
 		/// Generates Python.
 		/// </summary>
+		/// <param name="parser">The parser.</param>
 		/// <param name="settings">The settings.</param>
 		/// <returns>The number of updated files.</returns>
+		public static int GeneratePython(ServiceParser parser, PythonGeneratorSettings settings) =>
+			FileGenerator.GenerateFiles(parser, new PythonGenerator { GeneratorName = nameof(PythonGenerator) }, settings);
+
+		/// <summary>
+		/// Generates Python.
+		/// </summary>
+		/// <param name="settings">The settings.</param>
+		/// <returns>The number of updated files.</returns>
+		[Obsolete("Use the overload that takes a parser.")]
 		public static int GeneratePython(PythonGeneratorSettings settings) =>
 			FileGenerator.GenerateFiles(new PythonGenerator { GeneratorName = nameof(PythonGenerator) }, settings);
 

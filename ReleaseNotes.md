@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.14.1
+
+* Ignore events for now.
+
 ## 0.14.0
 
 * Add .NET 8 targets. Update dependencies.
