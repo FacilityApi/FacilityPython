@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.15.0
+
+* Drop support for end-of-life frameworks.
+* Use roll forward with .NET tools.
+
 ## 0.14.1
 
 * Ignore events for now.
