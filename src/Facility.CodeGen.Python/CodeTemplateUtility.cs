@@ -24,7 +24,7 @@ namespace Facility.CodeGen.Python
 			return text;
 		}
 
-#if NET6_0_OR_GREATER
+#if !NETSTANDARD2_0
 		internal static string ReplaceOrdinal(this string text, string oldValue, string newValue) => text.Replace(oldValue, newValue, StringComparison.Ordinal);
 #else
 		internal static string ReplaceOrdinal(this string text, string oldValue, string newValue) => text.Replace(oldValue, newValue);
