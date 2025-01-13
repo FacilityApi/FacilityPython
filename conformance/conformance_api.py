@@ -104,6 +104,7 @@ class Any(facility.DTO):
         *,
         string: str = None,
         boolean: bool = None,
+        float_: float = None,
         double: float = None,
         int32: int = None,
         int64: int = None,
@@ -122,6 +123,7 @@ class Any(facility.DTO):
         """
         :param string:
         :param boolean:
+        :param float_:
         :param double:
         :param int32:
         :param int64:
@@ -144,6 +146,9 @@ class Any(facility.DTO):
         if not isinstance(boolean, (bool, type(None))):
             raise ValueError(f"Invalid boolean: {boolean}")
         self.boolean = boolean
+        if not isinstance(float_, (float, type(None))):
+            raise ValueError(f"Invalid float_: {float_}")
+        self.float_ = float_
         if not isinstance(double, (float, type(None))):
             raise ValueError(f"Invalid double: {double}")
         self.double = double
@@ -192,6 +197,7 @@ class Any(facility.DTO):
         return Any(
             string=data.get("string"),
             boolean=facility.string_to_bool(data.get("boolean")),
+            float_=data["float"] if "float" in data else None,
             double=float(data["double"]) if "double" in data else None,
             int32=int(data["int32"]) if "int32" in data else None,
             int64=int(data["int64"]) if "int64" in data else None,
@@ -215,6 +221,7 @@ class AnyArray(facility.DTO):
         *,
         string: typing.List[str] = None,
         boolean: typing.List[bool] = None,
+        float_: typing.List[float] = None,
         double: typing.List[float] = None,
         int32: typing.List[int] = None,
         int64: typing.List[int] = None,
@@ -233,6 +240,7 @@ class AnyArray(facility.DTO):
         """
         :param string:
         :param boolean:
+        :param float_:
         :param double:
         :param int32:
         :param int64:
@@ -255,6 +263,9 @@ class AnyArray(facility.DTO):
         if not isinstance(boolean, (list, type(None))):
             raise ValueError(f"Invalid boolean: {boolean}")
         self.boolean = boolean
+        if not isinstance(float_, (list, type(None))):
+            raise ValueError(f"Invalid float_: {float_}")
+        self.float_ = float_
         if not isinstance(double, (list, type(None))):
             raise ValueError(f"Invalid double: {double}")
         self.double = double
@@ -303,6 +314,7 @@ class AnyArray(facility.DTO):
         return AnyArray(
             string=[v1 for v1 in data["string"]] if "string" in data else None,
             boolean=[v1 for v1 in data["boolean"]] if "boolean" in data else None,
+            float_=[v1 for v1 in data["float"]] if "float" in data else None,
             double=[float(v1) for v1 in data["double"]] if "double" in data else None,
             int32=[int(v1) for v1 in data["int32"]] if "int32" in data else None,
             int64=[int(v1) for v1 in data["int64"]] if "int64" in data else None,
@@ -326,6 +338,7 @@ class AnyMap(facility.DTO):
         *,
         string: typing.Dict[str, str] = None,
         boolean: typing.Dict[str, bool] = None,
+        float_: typing.Dict[str, float] = None,
         double: typing.Dict[str, float] = None,
         int32: typing.Dict[str, int] = None,
         int64: typing.Dict[str, int] = None,
@@ -344,6 +357,7 @@ class AnyMap(facility.DTO):
         """
         :param string:
         :param boolean:
+        :param float_:
         :param double:
         :param int32:
         :param int64:
@@ -366,6 +380,9 @@ class AnyMap(facility.DTO):
         if not isinstance(boolean, (dict, type(None))):
             raise ValueError(f"Invalid boolean: {boolean}")
         self.boolean = boolean
+        if not isinstance(float_, (dict, type(None))):
+            raise ValueError(f"Invalid float_: {float_}")
+        self.float_ = float_
         if not isinstance(double, (dict, type(None))):
             raise ValueError(f"Invalid double: {double}")
         self.double = double
@@ -414,6 +431,7 @@ class AnyMap(facility.DTO):
         return AnyMap(
             string=data["string"] if "string" in data else None,
             boolean=data["boolean"] if "boolean" in data else None,
+            float_=data["float"] if "float" in data else None,
             double=data["double"] if "double" in data else None,
             int32=data["int32"] if "int32" in data else None,
             int64=data["int64"] if "int64" in data else None,
@@ -437,6 +455,7 @@ class AnyResult(facility.DTO):
         *,
         string: facility.Result[str] = None,
         boolean: facility.Result[bool] = None,
+        float_: facility.Result[float] = None,
         double: facility.Result[float] = None,
         int32: facility.Result[int] = None,
         int64: facility.Result[int] = None,
@@ -455,6 +474,7 @@ class AnyResult(facility.DTO):
         """
         :param string:
         :param boolean:
+        :param float_:
         :param double:
         :param int32:
         :param int64:
@@ -477,6 +497,9 @@ class AnyResult(facility.DTO):
         if not isinstance(boolean, (facility.Result, type(None))):
             raise ValueError(f"Invalid boolean: {boolean}")
         self.boolean = boolean
+        if not isinstance(float_, (facility.Result, type(None))):
+            raise ValueError(f"Invalid float_: {float_}")
+        self.float_ = float_
         if not isinstance(double, (facility.Result, type(None))):
             raise ValueError(f"Invalid double: {double}")
         self.double = double
@@ -525,6 +548,7 @@ class AnyResult(facility.DTO):
         return AnyResult(
             string=facility.Result.from_data(data["string"]) if "string" in data else None,
             boolean=facility.Result.from_data(data["boolean"]) if "boolean" in data else None,
+            float_=facility.Result.from_data(data["float"]) if "float" in data else None,
             double=facility.Result.from_data(data["double"]) if "double" in data else None,
             int32=facility.Result.from_data(data["int32"]) if "int32" in data else None,
             int64=facility.Result.from_data(data["int64"]) if "int64" in data else None,
@@ -548,6 +572,7 @@ class AnyNullable(facility.DTO):
         *,
         string: TODO = None,
         boolean: TODO = None,
+        float_: TODO = None,
         double: TODO = None,
         int32: TODO = None,
         int64: TODO = None,
@@ -565,6 +590,7 @@ class AnyNullable(facility.DTO):
         """
         :param string:
         :param boolean:
+        :param float_:
         :param double:
         :param int32:
         :param int64:
@@ -586,6 +612,9 @@ class AnyNullable(facility.DTO):
         if not isinstance(boolean, (TODO, type(None))):
             raise ValueError(f"Invalid boolean: {boolean}")
         self.boolean = boolean
+        if not isinstance(float_, (TODO, type(None))):
+            raise ValueError(f"Invalid float_: {float_}")
+        self.float_ = float_
         if not isinstance(double, (TODO, type(None))):
             raise ValueError(f"Invalid double: {double}")
         self.double = double
@@ -631,6 +660,7 @@ class AnyNullable(facility.DTO):
         return AnyNullable(
             string=data["string"] if "string" in data else None,
             boolean=data["boolean"] if "boolean" in data else None,
+            float_=data["float"] if "float" in data else None,
             double=data["double"] if "double" in data else None,
             int32=data["int32"] if "int32" in data else None,
             int64=data["int64"] if "int64" in data else None,
@@ -897,6 +927,7 @@ class MirrorHeadersResponse(facility.Response):
         *,
         string: str = None,
         boolean: bool = None,
+        float_: float = None,
         double: float = None,
         int32: int = None,
         int64: int = None,
@@ -907,6 +938,7 @@ class MirrorHeadersResponse(facility.Response):
         """
         :param string:
         :param boolean:
+        :param float_:
         :param double:
         :param int32:
         :param int64:
@@ -921,6 +953,9 @@ class MirrorHeadersResponse(facility.Response):
         if not isinstance(boolean, (bool, type(None))):
             raise ValueError(f"Invalid boolean: {boolean}")
         self.boolean = boolean
+        if not isinstance(float_, (float, type(None))):
+            raise ValueError(f"Invalid float_: {float_}")
+        self.float_ = float_
         if not isinstance(double, (float, type(None))):
             raise ValueError(f"Invalid double: {double}")
         self.double = double
@@ -945,6 +980,7 @@ class MirrorHeadersResponse(facility.Response):
         return MirrorHeadersResponse(
             string=data.get("string"),
             boolean=facility.string_to_bool(data.get("boolean")),
+            float_=data["float"] if "float" in data else None,
             double=float(data["double"]) if "double" in data else None,
             int32=int(data["int32"]) if "int32" in data else None,
             int64=int(data["int64"]) if "int64" in data else None,
@@ -1295,6 +1331,7 @@ class Client(facility.ClientBase):
         self, *,
         string: str = None,
         boolean: bool = None,
+        float_: float = None,
         double: float = None,
         int32: int = None,
         int64: int = None,
@@ -1306,6 +1343,7 @@ class Client(facility.ClientBase):
 
         :param string:
         :param boolean:
+        :param float_:
         :param double:
         :param int32:
         :param int64:
@@ -1319,6 +1357,8 @@ class Client(facility.ClientBase):
             query_["string"] = string
         if boolean is not None:
             query_["boolean"] = boolean
+        if float_ is not None:
+            query_["float"] = float_
         if double is not None:
             query_["double"] = double
         if int32 is not None:
@@ -1344,6 +1384,7 @@ class Client(facility.ClientBase):
         self, *,
         string: str,
         boolean: bool,
+        float_: float,
         double: float,
         int32: int,
         int64: int,
@@ -1355,6 +1396,7 @@ class Client(facility.ClientBase):
 
         :param string:
         :param boolean:
+        :param float_:
         :param double:
         :param int32:
         :param int64:
@@ -1366,6 +1408,8 @@ class Client(facility.ClientBase):
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'string' is required."))
         if boolean is None:
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'boolean' is required."))
+        if float_ is None:
+            return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'float' is required."))
         if double is None:
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'double' is required."))
         if int32 is None:
@@ -1378,7 +1422,7 @@ class Client(facility.ClientBase):
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'enum' is required."))
         if datetime is None:
             return facility.Result(error=facility.Error(code="InvalidRequest", message=f"'datetime' is required."))
-        uri_ = f"/checkPath/{facility.encode(string)}/{facility.encode(boolean)}/{facility.encode(double)}/{facility.encode(int32)}/{facility.encode(int64)}/{facility.encode(decimal_)}/{facility.encode(enum_)}/{facility.encode(datetime)}"
+        uri_ = f"/checkPath/{facility.encode(string)}/{facility.encode(boolean)}/{facility.encode(float_)}/{facility.encode(double)}/{facility.encode(int32)}/{facility.encode(int64)}/{facility.encode(decimal_)}/{facility.encode(enum_)}/{facility.encode(datetime)}"
         query_ = dict()
         request_ = None
         headers_ = None
@@ -1393,6 +1437,7 @@ class Client(facility.ClientBase):
         self, *,
         string: str = None,
         boolean: bool = None,
+        float_: float = None,
         double: float = None,
         int32: int = None,
         int64: int = None,
@@ -1404,6 +1449,7 @@ class Client(facility.ClientBase):
 
         :param string:
         :param boolean:
+        :param float_:
         :param double:
         :param int32:
         :param int64:
@@ -1419,6 +1465,8 @@ class Client(facility.ClientBase):
             headers_["string"] = str(string)
         if boolean is not None:
             headers_["boolean"] = str(boolean)
+        if float_ is not None:
+            headers_["float"] = str(float_)
         if double is not None:
             headers_["double"] = str(double)
         if int32 is not None:
@@ -1439,6 +1487,7 @@ class Client(facility.ClientBase):
                     header_map={
                         "string": "string",
                         "boolean": "boolean",
+                        "float": "float",
                         "double": "double",
                         "int32": "int32",
                         "int64": "int64",
