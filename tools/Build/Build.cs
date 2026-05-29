@@ -2,18 +2,9 @@ return BuildRunner.Execute(args, build =>
 {
 	var codegen = "fsdgenpython";
 
-	var gitLogin = new GitLoginInfo("FacilityApiBot", Environment.GetEnvironmentVariable("BUILD_BOT_PASSWORD") ?? "");
-
 	var dotNetBuildSettings = new DotNetBuildSettings
 	{
 		NuGetApiKey = Environment.GetEnvironmentVariable("NUGET_API_KEY"),
-		DocsSettings = new DotNetDocsSettings
-		{
-			GitLogin = gitLogin,
-			GitAuthor = new GitAuthorInfo("FacilityApiBot", "facilityapi@gmail.com"),
-			SourceCodeUrl = "https://github.com/FacilityApi/FacilityPython/tree/master/src",
-			ProjectHasDocs = name => !name.StartsWith("fsdgen", StringComparison.Ordinal),
-		},
 		Verbosity = DotNetBuildVerbosity.Minimal,
 		CleanSettings = new DotNetCleanSettings
 		{
