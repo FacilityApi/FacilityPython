@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.16.1
+
+* Update NuGet package README.
+* Update Scriban dependency.
+
 ## 0.16.0
 
 * Support `float` field type.
