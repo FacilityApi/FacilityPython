@@ -5,6 +5,8 @@
     <Description>A library that generates Python for a Facility Service Definition.</Description>
     <PackageTags>Facility FSD Python CodeGen</PackageTags>
     <IsPackable>true</IsPackable>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RewritePackageReadmeLinks>true</RewritePackageReadmeLinks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CA1845</NoWarn>
   </PropertyGroup>
@@ -12,6 +14,10 @@
   <ItemGroup>
     <PackageReference Include="Facility.Definition" />
     <PackageReference Include="Scriban" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

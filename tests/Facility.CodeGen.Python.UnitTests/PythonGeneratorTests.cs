@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Facility.CodeGen.Python.UnitTests
 {
-	public sealed class PythonGeneratorTests
+	internal sealed class PythonGeneratorTests
 	{
 		[Test]
 		public void GenerateExampleApiSuccess()

@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/Facility.CodeGen.Python/Facility.CodeGen.Python.csproj" />
+  <Project Path="src/fsdgenpython/fsdgenpython.csproj" />
+  <Project Path="tests/Facility.CodeGen.Python.UnitTests/Facility.CodeGen.Python.UnitTests.csproj" />
+  <Project Path="tools/Build/Build.csproj" />
+</Solution>

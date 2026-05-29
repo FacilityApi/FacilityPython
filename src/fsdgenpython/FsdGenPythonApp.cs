@@ -6,7 +6,7 @@ using Facility.Definition.Fsd;
 
 namespace fsdgenpython
 {
-	public sealed class FsdGenPythonApp : CodeGeneratorApp
+	internal sealed class FsdGenPythonApp : CodeGeneratorApp
 	{
 		public static int Main(string[] args)
 		{
