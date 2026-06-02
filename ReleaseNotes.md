@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.16.2
+
+* Update dependencies.
+
 ## 0.16.1
 
 * Update NuGet package README.
