@@ -10,7 +10,14 @@ namespace Facility.CodeGen.Python
 	{
 		public static string Render(string templateText, CodeTemplateGlobals globals)
 		{
-			var templateContext = new TemplateContext { StrictVariables = true, MemberRenamer = x => x.Name };
+			var templateContext = new TemplateContext
+			{
+				StrictVariables = true,
+				MemberRenamer = x => x.Name,
+
+				// Preserve support for large schemas; newer Scriban versions cap loop iterations at 1000 by default.
+				LoopLimit = 0,
+			};
 			templateContext.PushCulture(new CultureInfo("en-US"));
 			templateContext.PushGlobal(CreateScriptObject(globals));
 

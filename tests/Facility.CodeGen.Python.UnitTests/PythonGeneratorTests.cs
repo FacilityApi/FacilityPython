@@ -10,19 +10,47 @@ namespace Facility.CodeGen.Python.UnitTests
 		[Test]
 		public void GenerateExampleApiSuccess()
 		{
-			ServiceInfo service;
-			const string fileName = "Facility.CodeGen.Python.UnitTests.ConformanceApi.fsd";
-			var parser = new FsdParser(new FsdParserSettings { SupportsEvents = true });
-			var stream = GetType().GetTypeInfo().Assembly.GetManifestResourceStream(fileName);
-			Assert.That(stream, Is.Not.Null);
-			using (var reader = new StreamReader(stream!))
-				service = parser.ParseDefinition(new ServiceDefinitionText(Path.GetFileName(fileName), reader.ReadToEnd()));
+			var generator = CreateGenerator();
+			generator.GenerateOutput(ParseEmbeddedFsd("Facility.CodeGen.Python.UnitTests.ConformanceApi.fsd"));
+		}
 
-			var generator = new PythonGenerator
+		[Test]
+		public void GenerateLargeDataSuccess()
+		{
+			var fieldLines = string.Join(Environment.NewLine, Enumerable.Range(1, 1001).Select(index => $"\t\tfield{index}: string;"));
+			var fsdText =
+				$$"""
+				service LargeApi
+				{
+					data LargeData
+					{
+				{{fieldLines}}
+					}
+				}
+				""";
+
+			var generator = CreateGenerator();
+			generator.GenerateOutput(ParseFsd("LargeApi.fsd", fsdText));
+		}
+
+		private static PythonGenerator CreateGenerator() =>
+			new()
 			{
 				GeneratorName = "PythonGeneratorTests",
 			};
-			generator.GenerateOutput(service);
+
+		private static ServiceInfo ParseEmbeddedFsd(string fileName)
+		{
+			var stream = typeof(PythonGeneratorTests).GetTypeInfo().Assembly.GetManifestResourceStream(fileName);
+			Assert.That(stream, Is.Not.Null);
+			using var reader = new StreamReader(stream!);
+			return ParseFsd(Path.GetFileName(fileName), reader.ReadToEnd());
+		}
+
+		private static ServiceInfo ParseFsd(string fileName, string text)
+		{
+			var parser = new FsdParser(new FsdParserSettings { SupportsEvents = true });
+			return parser.ParseDefinition(new ServiceDefinitionText(fileName, text));
 		}
 	}
 }
