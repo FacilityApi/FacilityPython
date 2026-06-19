@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.16.3
+
+* Fix fsdgenpython loop limit regression. (#35)
+
 ## 0.16.2
 
 * Update dependencies.
