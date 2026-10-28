@@ -13,7 +13,7 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="NUnit" Version="5.0.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.3.1" />
-    <PackageVersion Include="Scriban" Version="7.5.0" />
+    <PackageVersion Include="Scriban" Version="7.5.1" />
   </ItemGroup>
   <!-- DO NOT EDIT: dotnet-common-props/analyzers convention -->
   <ItemGroup>
